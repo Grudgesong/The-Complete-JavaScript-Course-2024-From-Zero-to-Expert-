@@ -11,16 +11,21 @@ document.querySelector('.number').textContent = secretNumber;
 
 document.querySelector('.check').addEventListener('click', function () {
   const guess = Number(document.querySelector('.guess').value);
-
+  //When there is no input
   !guess
     ? (document.querySelector('.message').textContent = 'No Number!!')
-    : guess === secretNumber
-    ? (document.querySelector('.message').textContent = 'Correct Number!!')
-    : guess > secretNumber
+    : //When player wins
+    guess === secretNumber
+    ? ((document.querySelector('.message').textContent = 'Correct Number!!'),
+      (document.querySelector('body').style.backgroundColor = '#60b347'),
+      (document.querySelector('.number').style.width = '30rem'))
+    : //When guess is too high
+    guess > secretNumber
     ? ((document.querySelector('.message').textContent = 'Too High!!'),
       score--,
       (document.querySelector('.score').textContent = score))
-    : guess < secretNumber
+    : //When guess is too low
+    guess < secretNumber
     ? ((document.querySelector('.message').textContent = 'Too Low!!'),
       score--,
       (document.querySelector('.score').textContent = score))
