@@ -85,30 +85,30 @@ const calcDisplayBalance = function (movements) {
   labelBalance.textContent = `${balance} EUR`;
 };
 
-displayMovements(account1.movements);
-calcDisplayBalance(account1.movements);
+// displayMovements(account1.movements);
+// calcDisplayBalance(account1.movements);
 
-const calcDisplaySummary = function (movements) {
-  const incomes = movements
+const calcDisplaySummary = function (account) {
+  const incomes = account.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
   labelSumIn.textContent = `${incomes}€`;
 
-  const out = movements
+  const out = account.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
   labelSumOut.textContent = `${Math.abs(out)}€`;
 
-  const interest = movements
+  const interest = account.movements
     .filter(mov => mov > 0)
-    .map(deposit => (deposit * 1.2) / 100)
+    .map(deposit => (deposit * account.interestRate) / 100)
     .filter((int, i, arr) => {
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
   labelSumInterest.textContent = `${interest}€`;
 };
-calcDisplaySummary(account1.movements);
+// calcDisplaySummary(account1.movements);
 
 //Create username function
 const createUsernames = function (accs) {
@@ -123,6 +123,40 @@ const createUsernames = function (accs) {
 // const user = 'Steven Thomas Williams'; //stw
 createUsernames(accounts);
 
+//Event Handler
+let currentAccount;
+btnLogin.addEventListener('click', function (e) {
+  //Prevent form from submitting
+  e.preventDefault();
+
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  );
+
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    //Display UI and message
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(' ')[0]
+    }`;
+
+    containerApp.style.opacity = 100;
+
+    //Clear Input field
+    inputLoginPin.value = inputLoginUsername.value = '';
+    inputLoginPin.blur();
+
+    //Display movements
+    displayMovements(currentAccount.movements);
+
+    //Display Balance
+    calcDisplayBalance(currentAccount.movements);
+
+    //Display Summary
+    calcDisplaySummary(currentAccount);
+  }
+});
+
+//------------------------------------------------------ NOT USED IN THE APP----------------------------------------------------------------------------------------------
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 //Filter deposits and withdrawals----------------------------------------------------------
 const deposits = movements.filter(function (mov) {
@@ -155,6 +189,11 @@ const totalDepositUSD = movements
   })
   // .map(mov => mov * eurToUsd)
   .reduce((acc, mov) => acc + mov, 0);
+
+//The Find Method
+const firstWithdrawal = movements.find(mov => mov < 0);
+
+const account = accounts.find(acc => acc.owner === 'Jessica Davis');
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
