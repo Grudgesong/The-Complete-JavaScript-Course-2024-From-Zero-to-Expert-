@@ -88,6 +88,28 @@ const calcDisplayBalance = function (movements) {
 displayMovements(account1.movements);
 calcDisplayBalance(account1.movements);
 
+const calcDisplaySummary = function (movements) {
+  const incomes = movements
+    .filter(mov => mov > 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSumIn.textContent = `${incomes}€`;
+
+  const out = movements
+    .filter(mov => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSumOut.textContent = `${Math.abs(out)}€`;
+
+  const interest = movements
+    .filter(mov => mov > 0)
+    .map(deposit => (deposit * 1.2) / 100)
+    .filter((int, i, arr) => {
+      return int >= 1;
+    })
+    .reduce((acc, int) => acc + int, 0);
+  labelSumInterest.textContent = `${interest}€`;
+};
+calcDisplaySummary(account1.movements);
+
 //Create username function
 const createUsernames = function (accs) {
   accs.forEach(function (acc) {
@@ -102,13 +124,13 @@ const createUsernames = function (accs) {
 createUsernames(accounts);
 
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
-//Filter deposits and withdrawals
+//Filter deposits and withdrawals----------------------------------------------------------
 const deposits = movements.filter(function (mov) {
   return mov > 0;
 });
 
 const withdrawals = movements.filter(mov => mov < 0);
-//accumulator -> SNOWBALL
+//accumulator -> SNOWBALL-----------------------------------------------------------------
 // const balance = movements.reduce(function (acc, cur, i, arr) {
 //   return acc + cur;
 // }, 0);
@@ -118,11 +140,21 @@ const balance = movements.reduce((acc, cur) => acc + cur, 0);
 let balance2 = 0;
 for (const mov of movements) balance2 += mov;
 
-//Maximum value
+//Maximum value----------------------------------------------------------------------------
 const max = movements.reduce((acc, mov) => {
   if (acc > mov) return acc;
   else return mov;
 }, movements[0]);
+
+//Chaining Method-------------------------PIPELINE-------------------------------------------------
+const eurToUsd = 1.1;
+const totalDepositUSD = movements
+  .filter(mov => mov > 0)
+  .map((mov, i, arr) => {
+    return mov * eurToUsd;
+  })
+  // .map(mov => mov * eurToUsd)
+  .reduce((acc, mov) => acc + mov, 0);
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
