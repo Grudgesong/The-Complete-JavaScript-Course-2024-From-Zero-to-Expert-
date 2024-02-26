@@ -80,9 +80,10 @@ const displayMovements = function (movements) {
 };
 
 // Calculate balance correctly by summing up all movements
-const calcDisplayBalance = function (movements) {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${balance} EUR`;
+const calcDisplayBalance = function (account) {
+  account.balance = account.movements.reduce((acc, mov) => acc + mov, 0);
+  // account.balance=balance;
+  labelBalance.textContent = `${account.balance} EUR`;
 };
 
 // displayMovements(account1.movements);
@@ -123,6 +124,18 @@ const createUsernames = function (accs) {
 // const user = 'Steven Thomas Williams'; //stw
 createUsernames(accounts);
 
+//Update UI
+const updateUI = function (account) {
+  //Display movements
+  displayMovements(account.movements);
+
+  //Display Balance
+  calcDisplayBalance(account);
+
+  //Display Summary
+  calcDisplaySummary(account);
+};
+
 //Event Handler
 let currentAccount;
 btnLogin.addEventListener('click', function (e) {
@@ -145,14 +158,31 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginPin.value = inputLoginUsername.value = '';
     inputLoginPin.blur();
 
-    //Display movements
-    displayMovements(currentAccount.movements);
+    updateUI(currentAccount);
+  }
+});
 
-    //Display Balance
-    calcDisplayBalance(currentAccount.movements);
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(
+    acc => acc.username === inputTransferTo.value
+  );
 
-    //Display Summary
-    calcDisplaySummary(currentAccount);
+  inputTransferAmount.value = inputTransferTo.value = '';
+
+  if (
+    amount > 0 &&
+    receiverAcc &&
+    currentAccount.balance >= amount &&
+    receiverAcc?.username !== currentAccount.username
+  ) {
+    //Doint the transfer
+    currentAccount.movements.push(-amount);
+    receiverAcc.movements.push(amount);
+
+    //Update UI
+    updateUI(currentAccount);
   }
 });
 
