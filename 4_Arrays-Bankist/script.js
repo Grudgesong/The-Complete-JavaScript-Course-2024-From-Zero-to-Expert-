@@ -162,6 +162,7 @@ btnLogin.addEventListener('click', function (e) {
   }
 });
 
+//Transfer Money
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
   const amount = Number(inputTransferAmount.value);
@@ -186,6 +187,26 @@ btnTransfer.addEventListener('click', function (e) {
   }
 });
 
+//Loan
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const amount = Number(inputLoanAmount.value);
+
+  if (
+    account > 0 &&
+    currentAccount.movements.some(mov => mov >= amount * 0.1)
+  ) {
+    //Add movement
+    currentAccount.movemens.push(amount);
+
+    //update UI
+    updateUI(currentAccount);
+  }
+  inputLoanAmount.value = '';
+});
+
+//Delete and Close account
 btnClose.addEventListener('click', function (e) {
   e.preventDefault();
 
@@ -207,6 +228,17 @@ btnClose.addEventListener('click', function (e) {
 });
 
 //------------------------------------------------------ NOT USED IN THE APP----------------------------------------------------------------------------------------------
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+// LECTURES
+
+const currencies = new Map([
+  ['USD', 'United States dollar'],
+  ['EUR', 'Euro'],
+  ['GBP', 'Pound sterling'],
+]);
+
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 //Filter deposits and withdrawals----------------------------------------------------------
 const deposits = movements.filter(function (mov) {
@@ -245,14 +277,19 @@ const firstWithdrawal = movements.find(mov => mov < 0);
 
 const account = accounts.find(acc => acc.owner === 'Jessica Davis');
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// LECTURES
+//Some
+//Equality
+//console.log(movements.includes(-130));
 
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
+//Condition
+const anyDeposits = movements.some(mov => mov > 0);
+
+//Every
+//console.log(movements.every(mov=>mov>0));            FALSE
+//console.log(account4.movements.every(mov=>mov>0));   TRUE
+
+//Seperate callback
+const deposit = mov => mov > 0;
+//console.log(account4.movements.every(deposit));   TRUE
 
 /////////////////////////////////////////////////
