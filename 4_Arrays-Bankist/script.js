@@ -277,14 +277,14 @@ const firstWithdrawal = movements.find(mov => mov < 0);
 
 const account = accounts.find(acc => acc.owner === 'Jessica Davis');
 
-//Some
+//Some-------------------------------------------------------------------------------------------------------
 //Equality
 //console.log(movements.includes(-130));
 
 //Condition
 const anyDeposits = movements.some(mov => mov > 0);
 
-//Every
+//Every-------------------------------------------------------------------------------------------------------
 //console.log(movements.every(mov=>mov>0));            FALSE
 //console.log(account4.movements.every(mov=>mov>0));   TRUE
 
@@ -292,4 +292,28 @@ const anyDeposits = movements.some(mov => mov > 0);
 const deposit = mov => mov > 0;
 //console.log(account4.movements.every(deposit));   TRUE
 
+//Flat Method--------------------------------------------------------------------------------------------------
+const arr = [
+  [1, 2, 3],
+  [4, 5, 6],
+];
+//console.log(arr.flat());
+
+const arrDeep = [[[1, 2], 3], [4, [5, 6]], 7, 8];
+//console.log(arrDeep.flat(2));
+
+const accountMovements = accounts.map(acc => acc.movements);
+const allMovements = accountMovements.flat();
+const overallBalance = allMovements.reduce((acc, mov) => acc + mov, 0);
+
+//Chaining
+const overallBalancee = accounts
+  .map(acc => acc.movements)
+  .flat()
+  .reduce((acc, mov) => acc + mov, 0);
+
+//FlatMap
+const overallBalancee2 = accounts
+  .flatMap(acc => acc.movements)
+  .reduce((acc, mov) => acc + mov, 0);
 /////////////////////////////////////////////////
