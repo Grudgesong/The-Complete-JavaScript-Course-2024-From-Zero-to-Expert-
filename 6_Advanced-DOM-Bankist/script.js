@@ -33,6 +33,39 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
+//Implementing Smooth scrolling
+const btnScrollTo = document.querySelectorAll('.btn--scroll-to');
+const section1 = document.querySelector('#section--1');
+
+btnScrollTo.addEventListener('click', function (e) {
+  const s1coords = section1.getBoundingClientRect();
+  // console.log(e.target.getBoundingClientRect());
+
+  //Current Scroll position
+  // console.log('Current Scroll (X/Y)', window.pageXOffset,pageYOffset);
+
+  //Read the height and width of the viewport
+  // console.log(
+  //   'height/width viewport',
+  //   document.documentElement.clientHeight,
+  //   document.documentElement.clientWidth
+  // );
+
+  //Scrolling
+  // window.scrollTo(
+  //   s1coords.left + window.pageXOffset,
+  //   s1coords.top + window.pageYOffset
+  // );
+
+  // window.scrollTo({
+  //   left: s1coords.left + window.pageXOffset,
+  //   top: s1coords.top + window.pageYOffset,
+  //   behavior: 'smooth',
+  // });
+
+  section1.scrollIntoView({ behavior: 'smooth' });
+});
+
 //------------------------------LECTURE---------------------------------------
 /*
 ///////////////////////////////////////
@@ -123,6 +156,6 @@ logo.classList.remove('c', 'j');
 logo.classList.toggle('c');
 logo.classList.contains('c'); // not includes
 
-// Don't use
+// Don't use because it will override all the classes already there
 logo.clasName = 'jonas';
   */
