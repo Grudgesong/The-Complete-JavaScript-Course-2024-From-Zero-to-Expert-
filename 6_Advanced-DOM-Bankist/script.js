@@ -9,6 +9,10 @@ const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 const btnScrollTo = document.querySelectorAll('.btn--scroll-to');
 const section1 = document.querySelector('#section--1');
+//Building a tabbed component--------------------------------------
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContainer = document.querySelector('.operations__tab-container');
+const tabsContent = document.querySelectorAll('.operations__content');
 
 const openModal = function (e) {
   e.preventDefault();
@@ -59,6 +63,27 @@ document.querySelector('.nav__links').addEventListener('click', function (e) {
   }
 });
 
+//Building a tabbed component--------------------------------------
+
+tabsContainer.addEventListener('click', function (e) {
+  const clicked = e.target.closest('.operations__tab');
+
+  // Guard clause
+  if (!clicked) return;
+
+  // Remove active classes
+  tabs.forEach(t => t.classList.remove('operations__tab--active'));
+  tabsContent.forEach(c => c.classList.remove('operations__content--active'));
+
+  // Activate tab
+  clicked.classList.add('operations__tab--active');
+
+  // Activate content area
+  document
+    .querySelector(`.operations__content--${clicked.dataset.tab}`)
+    .classList.add('operations__content--active');
+});
+
 //Implementing Smooth scrolling
 
 btnScrollTo.addEventListener('click', function (e) {
@@ -89,38 +114,6 @@ btnScrollTo.addEventListener('click', function (e) {
 
   section1.scrollIntoView({ behavior: 'smooth' });
 });
-
-//DOM Transversing
-/*
-const h1= document.querySelector('h1');
-
-//Going downwards child
-console.log(h1.querySelectorAll('.highlight'));
-console.log(h1.childNodes);
-console.log(h1.children);// works only for direct children
-h1.firstElementChild.computedStyleMap.color= 'white';
-h1.lastElementChild.computedStyleMap.color= 'orangered';
-
-
-//Going upwards
-console.log(h1.parentNode);
-console.log(h1.parentElement);
-
-h1.closest('.header').color.background='var(--gradient-secondary)';
-h1.closest('h1').color.background='var(--gradient-primary)';
-
-//Going sideways siblings
-console.log(h1.previousElementSibling);
-console.log(h1.nextElementSibling);
-
-console.log(h1.previousSibling);
-console.log(h1.nextSibling);
-
-console.log(h1.parentElement.children);
-[...h1.parentElement.children].forEach(function(el){
-  if(el!==h1) el.style.transform= 'scale(0.5)';
-});
-*/
 
 //------------------------------LECTURE---------------------------------------
 /*
@@ -258,4 +251,37 @@ document.querySelector('.nav').addEventListener('click', function (e) {
 });
 
 
-  */
+//DOM Transversing----------------------------------------------
+/*
+const h1= document.querySelector('h1');
+
+//Going downwards child
+console.log(h1.querySelectorAll('.highlight'));
+console.log(h1.childNodes);
+console.log(h1.children);// works only for direct children
+h1.firstElementChild.computedStyleMap.color= 'white';
+h1.lastElementChild.computedStyleMap.color= 'orangered';
+
+
+//Going upwards
+console.log(h1.parentNode);
+console.log(h1.parentElement);
+
+h1.closest('.header').color.background='var(--gradient-secondary)';
+h1.closest('h1').color.background='var(--gradient-primary)';
+
+//Going sideways siblings
+console.log(h1.previousElementSibling);
+console.log(h1.nextElementSibling);
+
+console.log(h1.previousSibling);
+console.log(h1.nextSibling);
+
+console.log(h1.parentElement.children);
+[...h1.parentElement.children].forEach(function(el){
+  if(el!==h1) el.style.transform= 'scale(0.5)';
+});
+
+
+
+*/
