@@ -170,7 +170,31 @@ allSections.forEach(function (section) {
   section.classList.add('section--hidden');
 });
 
-//Implementing Smooth scrolling
+//Lazy Loading Images------------------------------------------
+const imgTarget = document.querySelectorAll('img[data-src]');
+const loadImg = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  //Replace src with data-src
+  entry.target.src = entry.target.dataset.src;
+
+  entry.target.addEventListener('load', function () {
+    entry.target.classList.remove('lazy-img');
+  });
+  observer.unobserve(entry.target);
+};
+
+const imgObserver = new IntersectionObserver(loadImg, {
+  root: null,
+  threshold: 0,
+  rootMargin: '200px', // make img load before we reach the image
+});
+
+imgTarget.forEach(img => imgObserver.observe(img));
+
+//Implementing Smooth scrolling---------------------------------
 
 btnScrollTo.addEventListener('click', function (e) {
   const s1coords = section1.getBoundingClientRect();
