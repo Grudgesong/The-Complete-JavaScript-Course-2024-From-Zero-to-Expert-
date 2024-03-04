@@ -7,12 +7,44 @@ const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
 const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
-const btnScrollTo = document.querySelectorAll('.btn--scroll-to');
+const btnScrollTo = document.querySelector('.btn--scroll-to');
 const section1 = document.querySelector('#section--1');
 //Building a tabbed component--------------------------------------
 const tabs = document.querySelectorAll('.operations__tab');
 const tabsContainer = document.querySelector('.operations__tab-container');
 const tabsContent = document.querySelectorAll('.operations__content');
+
+//Implementing Smooth scrolling---------------------------------
+
+btnScrollTo.addEventListener('click', function (e) {
+  const s1coords = section1.getBoundingClientRect();
+  // console.log(e.target.getBoundingClientRect());
+
+  //Current Scroll position
+  // console.log('Current Scroll (X/Y)', window.pageXOffset,pageYOffset);
+
+  //Read the height and width of the viewport
+  // console.log(
+  //   'height/width viewport',
+  //   document.documentElement.clientHeight,
+  //   document.documentElement.clientWidth
+  // );
+
+  //Scrolling
+  // window.scrollTo(
+  //   s1coords.left + window.pageXOffset,
+  //   s1coords.top + window.pageYOffset
+  // );
+
+  // window.scrollTo({
+  //   left: s1coords.left + window.pageXOffset,
+  //   top: s1coords.top + window.pageYOffset,
+  //   behavior: 'smooth',
+  // });
+
+  section1.scrollIntoView({ behavior: 'smooth' });
+});
+
 //Menu fade animation--------------------------------------------
 const nav = document.querySelector('.nav');
 
@@ -194,36 +226,47 @@ const imgObserver = new IntersectionObserver(loadImg, {
 
 imgTarget.forEach(img => imgObserver.observe(img));
 
-//Implementing Smooth scrolling---------------------------------
+//Building a slider component------------------------------------------------
+const slides = document.querySelectorAll('.slide');
+const btnLeft = document.querySelector('.slider__btn--left');
+const btnRight = document.querySelector('.slider__btn--right');
 
-btnScrollTo.addEventListener('click', function (e) {
-  const s1coords = section1.getBoundingClientRect();
-  // console.log(e.target.getBoundingClientRect());
+let curSlide = 0;
+const maxSlide = slides.length;
 
-  //Current Scroll position
-  // console.log('Current Scroll (X/Y)', window.pageXOffset,pageYOffset);
+// slides.forEach((s, i) => (s.style.transform = `translateX(${100 * i}%)`));
+//0,100,200,300%
 
-  //Read the height and width of the viewport
-  // console.log(
-  //   'height/width viewport',
-  //   document.documentElement.clientHeight,
-  //   document.documentElement.clientWidth
-  // );
+const gotToSlide = function (slide) {
+  slides.forEach(
+    (s, i) => (s.style.transform = `translateX(${100 * (i - slide)}%)`)
+  );
+};
+gotToSlide(0);
 
-  //Scrolling
-  // window.scrollTo(
-  //   s1coords.left + window.pageXOffset,
-  //   s1coords.top + window.pageYOffset
-  // );
+//Next slide
+const nextSlide = function () {
+  if (curSlide === maxSlide - 1) {
+    curSlide = 0;
+  } else {
+    curSlide++;
+  }
+  //curSlide= 1 .We want -100,0,100,200%
+  gotToSlide(curSlide);
+};
 
-  // window.scrollTo({
-  //   left: s1coords.left + window.pageXOffset,
-  //   top: s1coords.top + window.pageYOffset,
-  //   behavior: 'smooth',
-  // });
+const prevSlide = function () {
+  if (curSlide === 0) {
+    curSlide = maxSlide - 1;
+  } else {
+    curSlide--;
+  }
+  //curSlide= 1 .We want -100,0,100,200%
+  gotToSlide(curSlide);
+};
 
-  section1.scrollIntoView({ behavior: 'smooth' });
-});
+btnRight.addEventListener('click', nextSlide);
+btnLeft.addEventListener('click', prevSlide);
 
 //------------------------------LECTURE---------------------------------------
 /*
