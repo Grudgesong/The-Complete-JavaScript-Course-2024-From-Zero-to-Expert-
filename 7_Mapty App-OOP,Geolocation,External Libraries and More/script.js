@@ -70,6 +70,7 @@ class App {
   //private
   #map;
   #mapEvent;
+  #mapZoomLevel = 13;
   #workouts = [];
 
   constructor() {
@@ -80,6 +81,9 @@ class App {
 
     //Listening to change event on Type
     inputType.addEventListener('change', this._toggleElevationField);
+
+    //Move to marker on click
+    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
   }
 
   _getPosition() {
@@ -100,7 +104,7 @@ class App {
     //Displaying a Map using Leaflet Library
     const coords = [latitude, longitude];
 
-    this.#map = L.map('map').setView(coords, 13);
+    this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
 
     L.tileLayer('https://tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution:
@@ -271,6 +275,24 @@ class App {
     </li>`;
 
     form.insertAdjacentHTML('afterend', html);
+  }
+
+  //Move to marker on click
+  _moveToPopup(e) {
+    const workoutEl = e.target.closest('.workout');
+
+    if (!workoutEl) return;
+
+    const workout = this.#workouts.find(
+      work => work.id === workoutEl.dataset.id
+    );
+
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
   }
 }
 
