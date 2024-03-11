@@ -34,12 +34,9 @@ const controlRecipes = async function () {
   }
 };
 
-controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
+// controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
 
-//Listening fro load and hashchange Event-----------------------------------------
-
-['hashchange', 'load'].forEach(ev =>
-  window.addEventListener(ev, controlRecipes)
-);
-// window.addEventListener('hashchange', controlRecipes);
-// window.addEventListener('load', controlRecipes);
+const init = function () {
+  recipeView.addHandlerRender(controlRecipes);
+};
+init();
