@@ -8,6 +8,9 @@ class BookmarksView extends View {
     'No bookmarks yet. Please find a nice recipe and bookmark it!!';
   _message = '';
 
+  addHandlerRender(handler) {
+    window.addEventListener('load', handler);
+  }
   // Method to generate the HTML markup for the results
   _generateMarkup() {
     // Mapping over the data array and generating markup for each result, then joining them together

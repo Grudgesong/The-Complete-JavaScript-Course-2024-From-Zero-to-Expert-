@@ -1465,12 +1465,18 @@ var updateServings = exports.updateServings = function updateServings(newServing
   });
   state.recipe.servings = newServings;
 };
+
+//Storing bookmarks with local storage
+var persistBookmarks = function persistBookmarks() {
+  localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
+};
 var addBookmark = exports.addBookmark = function addBookmark(recipe) {
   //Add bookmark
   state.bookmarks.push(recipe);
 
   //Mark current recipe as bookmark
   if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+  persistBookmarks();
 };
 var deleteBookmark = exports.deleteBookmark = function deleteBookmark(id) {
   //Delete bookmark
@@ -1481,7 +1487,18 @@ var deleteBookmark = exports.deleteBookmark = function deleteBookmark(id) {
 
   //Mark current recipe as NOT bookmarked
   if (id === state.recipe.id) state.recipe.bookmarked = false;
+  persistBookmarks();
 };
+var init = function init() {
+  var storage = localStorage.getItem('bookmarks');
+  if (storage) state.bookmarks = JSON.parse(storage);
+};
+init();
+var clearBookmarks = function clearBookmarks() {
+  localStorage.clear('bookmarks');
+};
+
+// clearBookmarks();
 },{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","./config":"src/js/config.js","./helpers":"src/js/helpers.js","./views/recipeView":"src/js/views/recipeView.js"}],"src/js/views/searchView.js":[function(require,module,exports) {
 "use strict";
 
@@ -1745,10 +1762,14 @@ var BookmarksView = /*#__PURE__*/function (_View) {
     return _this;
   }
   _createClass(BookmarksView, [{
-    key: "_generateMarkup",
-    value:
+    key: "addHandlerRender",
+    value: function addHandlerRender(handler) {
+      window.addEventListener('load', handler);
+    }
     // Method to generate the HTML markup for the results
-    function _generateMarkup() {
+  }, {
+    key: "_generateMarkup",
+    value: function _generateMarkup() {
       // Mapping over the data array and generating markup for each result, then joining them together
       return this._data.map(function (bookmark) {
         return _previewView.default.render(bookmark, false);
@@ -18356,6 +18377,8 @@ var controlRecipes = /*#__PURE__*/function () {
 
           //Update results view to mark selected search result
           _resultView.default._update(model.getSearchResultsPage());
+
+          //Updating bookmarks view
           _bookmarksView.default._update(model.state.bookmarks);
 
           //Loading recipe
@@ -18431,6 +18454,7 @@ var controlPagination = function controlPagination(goToPage) {
 var controlServings = function controlServings(newServings) {
   //Update the recipe servings(in state)
   model.updateServings(newServings);
+
   //Update the recipe view
   // recipeView.render(model.state.recipe);
   _recipeView.default._update(model.state.recipe);
@@ -18444,7 +18468,11 @@ var controlAddBookmark = function controlAddBookmark() {
   //Render the bookmark tab
   _bookmarksView.default.render(model.state.bookmarks);
 };
+var controlBookmarks = function controlBookmarks() {
+  _bookmarksView.default.render(model.state.bookmarks);
+};
 var init = function init() {
+  _bookmarksView.default.addHandlerRender(controlBookmarks);
   _recipeView.default.addHandlerRender(controlRecipes);
   _recipeView.default.addHandlerUpdateServings(controlServings);
   _recipeView.default.addHandlerAddBookmark(controlAddBookmark);
