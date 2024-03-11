@@ -888,7 +888,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.TIMEOUT_SEC = exports.API_URL = void 0;
-var API_URL = exports.API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes';
+var API_URL = exports.API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
 var TIMEOUT_SEC = exports.TIMEOUT_SEC = 10;
 },{}],"src/js/helpers.js":[function(require,module,exports) {
 "use strict";
@@ -949,374 +949,170 @@ var getJSON = exports.getJSON = /*#__PURE__*/function () {
 }();
 },{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","./config":"src/js/config.js"}],"src/img/icons.svg":[function(require,module,exports) {
 module.exports = "/icons.ae3c38d5.svg";
-},{}],"node_modules/fractional/index.js":[function(require,module,exports) {
-/*
-fraction.js
-A Javascript fraction library.
+},{}],"node_modules/fracty/fracty.js":[function(require,module,exports) {
+// FRACTY CONVERTS DECIMAL NUMBERS TO FRACTIONS BY ASSUMING THAT TRAILING PATTERNS FROM 10^-2 CONTINUE TO REPEAT
+// The assumption is based on the most standard numbering conventions
+// e.g. 3.51 will convert to 3 51/100 while 3.511 will convert to 3 23/45
+// Throw any number up to 16 digits long at fracty and let fracy do the work.
+// If number is beyond 16 digits fracty will truncate at 15 digits to compensate for roundoff errors created in IEEE 754 Floating Point conversion.
 
-Copyright (c) 2009  Erik Garrison <erik@hypervolu.me>
+module.exports = function (number) { //IEEE 754 Floating Point conversion problems will cause entires above 16 digits to convert incorrectly to binary with small roundoff errors, so keeping entry below 16 digits will help fracy make the most accurate calculation. If there are 16 or more digits in the number fracty can be called on the decimal part of the number only to maximize accuracy.
+    let type;
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+    if (number < 0) { //If number is less than zero it's negative.
+        number = Math.abs(number);
+        type = '-';
+    } else {
+        type = '';
+    }
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+    if (number === undefined) {
+        return `Your input was undefined.`
+    }
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+    if (isNaN(number)) { //isNaN() instead of Number.isNaN() is used so that if fracty is called on something that is not a number but could be a string of numbers the function still passes as true.
+        return `"${number}" is not a number.`;
+    }
 
-*/
+    if (number == 9999999999999999) { //There's no reason to call fracty on an integer at all, but in the unlikely case that the number is 9999999999999999 JavaScript will round to 10000000000000000 and fracty handles that. Interestingly, if fracty is called on -9999999999999999, which fracty converts to absolute value, the number logged is 10000000000000000 but the number stored is 9999999999999999, so this if statement works for both 9999999999999999 and -9999999999999999.
+        return `${type}9999999999999999`;
+    }
 
+    if (number > 9999999999999999) { //Beyond 9999999999999999 IEEE 754 Floating Point conversion inaccuracies will occur in JavaScript.
+        return `Too many digits in your integer to maintain IEEE 754 Floating Point conversion accuracy.`;
+    }
 
-/* Fractions */
-/* 
- *
- * Fraction objects are comprised of a numerator and a denomenator.  These
- * values can be accessed at fraction.numerator and fraction.denomenator.
- *
- * Fractions are always returned and stored in lowest-form normalized format.
- * This is accomplished via Fraction.normalize.
- *
- * The following mathematical operations on fractions are supported:
- *
- * Fraction.equals
- * Fraction.add
- * Fraction.subtract
- * Fraction.multiply
- * Fraction.divide
- *
- * These operations accept both numbers and fraction objects.  (Best results
- * are guaranteed when the input is a fraction object.)  They all return a new
- * Fraction object.
- *
- * Usage:
- *
- * TODO
- *
- */
+    if (Number.isInteger(number)) { //If fracty is called on an integer, return the integer.
+        return `${type}${number}`;
+    }
 
-/*
- * The Fraction constructor takes one of:
- *   an explicit numerator (integer) and denominator (integer),
- *   a string representation of the fraction (string),
- *   or a floating-point number (float)
- *
- * These initialization methods are provided for convenience.  Because of
- * rounding issues the best results will be given when the fraction is
- * constructed from an explicit integer numerator and denomenator, and not a
- * decimal number.
- *
- *
- * e.g. new Fraction(1, 2) --> 1/2
- *      new Fraction('1/2') --> 1/2
- *      new Fraction('2 3/4') --> 11/4  (prints as 2 3/4)
- *
- */
-Fraction = function(numerator, denominator)
-{
-    /* double argument invocation */
-    if (typeof numerator !== 'undefined' && denominator) {
-        if (typeof(numerator) === 'number' && typeof(denominator) === 'number') {
-            this.numerator = numerator;
-            this.denominator = denominator;
-        } else if (typeof(numerator) === 'string' && typeof(denominator) === 'string') {
-            // what are they?
-            // hmm....
-            // assume they are ints?
-            this.numerator = parseInt(numerator);
-            this.denominator = parseInt(denominator);
+    if (number < .000001) { //Non negative numbers with integers equal to zero that are followed by six or more consecutive zeros will coerce to scientific notation but, interestingly enough, numbers with integers that are not zero that are followed by six or more consecutive zeros will not coerce to scientific notation. Therefore, in the case of numbers with integers that are not zero that are followed by six or more consecutive zeros, fracty is more accurate than it is with numbers that have  integers equal to zero that are followed by six or more consecutive zeros because fracty doesn't have to coerce the decimal part of the number to '0' so soon. This it the smartest way fracty can compensate for this "bug" in JavaScript.
+        return '0';
+    }
+
+    const numberString = number.toString();
+    const entry = numberString.split('.');
+    let integer = entry[0];
+    let decimal;
+
+    if (decimal == '0' && integer !== '0') { //If there's no decimal just return the integer.
+        return integer;
+    } else if (decimal == '0' && integer == '0') { //If only zero is entered return zero.
+        return '0';
+    } else if (numberString.length >= 17){ //If the number entered has equal to or more than 16 digits (decimal is excluded) truncate the last digit to prevent errors in IEEE 754 Floating Point conversion.
+        decimal = entry[1].slice(0,entry[1].length-1);
+    } else {
+        decimal = entry[1];
+    }
+
+    if (decimal == '99' && integer !== '0') { //Otherwise it will automatically round to 1/1.
+        return `${integer} 99/100`;
+    } else if (decimal == '99' && integer == '0') {
+        return `99/100`;
+    } else if (1 - parseFloat(`.${decimal}`) < .0011) { //If decimal is at least .99899999999 assume that the fraction will inevitably result in 1/1, so circumnavigate the issue that .999, upon IEEE 754 Floating Point conversion, accidentally becomes .9989999999999997 by replacing it with '999', which fracty will further reduce properly.
+        decimal = '999';
+    }
+
+    if (decimal == undefined) {
+        return integer;
+    }
+
+    const decimalRev = decimal.split('').reverse().join(''); //Reverse the string to look for patterns.
+    const patternSearch = /^(\d+)\1{1,2}/; //This greedy regex matches the biggest pattern that starts at the beginning of the string (at the end, in the case of the reversed string). A lazy regex doesn't work because it only identifies subpatterns in cases where subpatterns exist (e.g. '88' in '388388388388'), thus pattern capture must be greedy.
+    let pattern = decimalRev.match(patternSearch); //If there's a pattern, it's full sequence is in [0] of this array and the single unit is in [1] but it may still need to be reduced further.
+
+    if (pattern && decimal.length > 2) { //In keeping with the most standard numbering conventions of monetary divisibility, etc., if there's a pattern beyond two decimal places, reverse back the pattern that the greedy regex deemed a single unit, and the full pattern sequence, respectively.
+        let patternSequence = pattern[0].split('').reverse().join('');
+        let endPattern = pattern[1].split('').reverse().join('');
+
+        if (endPattern.length > 1) { //Test to see if the pattern unit is actually a single repeating digit.
+            let endPatternArray = endPattern.split('');
+            let testSingleUnit = 1;
+            for (let i = 0; i < endPatternArray.length; i++) {
+                testSingleUnit /= endPatternArray[0]/endPatternArray[i];
+            }
+
+            if (testSingleUnit === 1 ) {
+                endPattern = endPatternArray[0];
+            }
+          }
+
+        if (endPattern.length > 1 && endPattern.length % 2 === 0) { //If what the greedy regex deems to be the pattern unit has a length greater than 1 and an even number of digits, check to see if splitting it in half will give two equal parts. If it does, one of those equal parts will be the pattern. There's no need repeat this test as no case needing this test more than once would exist for strings of 16 digits or less.
+            endPattern = parseInt(endPattern.slice(0,endPattern.length/2),10) - parseInt(endPattern.slice(endPattern.length/2,endPattern.length),10) === 0 ? endPattern.slice(0,endPattern.length/2) : endPattern;
         }
-    /* single-argument invocation */
-    } else if (typeof denominator === 'undefined') {
-        num = numerator; // swap variable names for legibility
-        if (typeof(num) === 'number') {  // just a straight number init
-            this.numerator = num;
-            this.denominator = 1;
-        } else if (typeof(num) === 'string') {
-            var a, b;  // hold the first and second part of the fraction, e.g. a = '1' and b = '2/3' in 1 2/3
-                       // or a = '2/3' and b = undefined if we are just passed a single-part number
-            var arr = num.split(' ')
-            if (arr[0]) a = arr[0]
-            if (arr[1]) b = arr[1]
-            /* compound fraction e.g. 'A B/C' */
-            //  if a is an integer ...
-            if (a % 1 === 0 && b && b.match('/')) {
-                return (new Fraction(a)).add(new Fraction(b));
-            } else if (a && !b) {
-                /* simple fraction e.g. 'A/B' */
-                if (typeof(a) === 'string' && a.match('/')) {
-                    // it's not a whole number... it's actually a fraction without a whole part written
-                    var f = a.split('/');
-                    this.numerator = f[0]; this.denominator = f[1];
-                /* string floating point */
-                } else if (typeof(a) === 'string' && a.match('\.')) {
-                    return new Fraction(parseFloat(a));
-                /* whole number e.g. 'A' */
-                } else { // just passed a whole number as a string
-                    this.numerator = parseInt(a);
-                    this.denominator = 1;
-                }
-            } else {
-                return undefined; // could not parse
+            return yesRepeat(decimal, endPattern, patternSequence, integer, type); //Begin calculating the numerator and denominator for decimals that have a pattern.
+        } else {
+            return noRepeat(decimal, integer, type); //Begin calculating the numerator and denominator for decimals that don't have a pattern.
+    }
+}
+
+  //IF THERE'S A TRAILING PATTERN FRACTY DIVIDES THE INPUT BY ONE SUBTRACTED FROM THE NEAREST BASE 10 NUMBER WITH NUMBER OF ZEROS EQUAL TO THE LENGTH OF THE REPEATED PATTERN (I.E. A SERIES OF 9'S) MULTIPLIED BY THE BASE 10 NUMBER GREATER THAN AND CLOSEST TO THE INPUT.
+function yesRepeat(decimal, endPattern, patternSequence, integer, type) {
+
+    const rep = true; //The numerator repeats.
+    const nonPatternLength = decimal.length - patternSequence.length >= 1 ? decimal.length - patternSequence.length : 1; //Does the length of the non pattern segment of the input = 0? If it does, that's incorrect since we know it must equal at least 1, otherwise it's the length of the decimal input minus the length of the full pattern.
+    const decimalMultiplier2 = Math.pow(10,(nonPatternLength)); //Second multiplier to use.
+    const float = parseFloat(`0.${decimal}`); //Convert the decimal input to a floating point number.
+    const decimalMultiplier1 = Math.pow(10,(endPattern.length)); //Find the right multiplier to use for both numerator and denominator, which will later have 1 subtracted from it in the case of the denominator.
+    const numerator = Math.round(((float * decimalMultiplier1) - float) * Math.pow(10,(nonPatternLength))); //Find the numerator to be used in calculating the fraction that contains a repeating trailing sequence.
+    const denominator = (decimalMultiplier1-1) * decimalMultiplier2; //Caluculate the denominator using the equation for repeating trailing sequences.
+    return reduce(numerator, denominator, integer, type, rep); //Further reduce the numerator and denominator.
+}
+
+//IF THERE'S NO TRAILING PATTERN FRACTY DIVIDES THE INPUT BY THE NEAREST BASE 10 INTEGER GREATER THAN THE NUMERATOR.
+function noRepeat(decimal, integer, type) {
+    const rep = false; //The numerator doesn't repeat.
+    const numerator = parseInt(decimal, 10); //Numerator begins as decimal input converted into an integer.
+    const denominator = Math.pow(10,(decimal.length)); //Denominator begins as 10 to the power of the length of the numerator.
+    return reduce(numerator, denominator, integer, type, rep); //Reduce the numerator and denominator.
+}
+
+//FRACTY REDUCES THE FRACTION.
+function reduce(numerator, denominator, integer, type, rep) {
+
+    const primeNumberArray = [2, 3, 5]; //If the numerator isn't from a repeating decimal case, the initialized array of prime numbers will suffice to find the common denominators.
+
+    if (rep === true) {  //If the numerator is from a repeating decimal case, fracty generates an array of prime numbers from 2 to the square root of the numerator, loops over the array to find the common denominators, and reduces the fraction. Since reducing by prime numbers beyond i^2 isn't necessary, fracty creates and array of the prime numbers that, when squared, are still less than or equal to the numerator.
+        for (let i = 3; i * i <= numerator; i+=2) {
+            if (numerator % i === 0) {
+                primeNumberArray.push(i);
             }
         }
     }
-    this.normalize();
-}
 
+    let j = 0; //Initialize counter over the prime number array for the while loop.
+    let comDenom = 1; //Initialize the common denominator.
+    let num = numerator; //Initialize the numerator.
+    let den = denominator; //Initialize the denominator.
 
-Fraction.prototype.clone = function()
-{
-    return new Fraction(this.numerator, this.denominator);
-}
-
-
-/* pretty-printer, converts fractions into whole numbers and fractions */
-Fraction.prototype.toString = function()
-{
-    if (this.denominator==='NaN') return 'NaN'
-    var wholepart = (this.numerator/this.denominator>0) ?
-      Math.floor(this.numerator / this.denominator) :
-      Math.ceil(this.numerator / this.denominator)
-    var numerator = this.numerator % this.denominator 
-    var denominator = this.denominator;
-    var result = []; 
-    if (wholepart != 0)  
-        result.push(wholepart);
-    if (numerator != 0)  
-        result.push(((wholepart===0) ? numerator : Math.abs(numerator)) + '/' + denominator);
-    return result.length > 0 ? result.join(' ') : 0;
-}
-
-
-/* destructively rescale the fraction by some integral factor */
-Fraction.prototype.rescale = function(factor)
-{
-    this.numerator *= factor;
-    this.denominator *= factor;
-    return this;
-}
-
-
-Fraction.prototype.add = function(b)
-{
-    var a = this.clone();
-    if (b instanceof Fraction) {
-        b = b.clone();
-    } else {
-        b = new Fraction(b);
-    }
-    td = a.denominator;
-    a.rescale(b.denominator);
-    b.rescale(td);
-
-    a.numerator += b.numerator;
-
-    return a.normalize();
-}
-
-
-Fraction.prototype.subtract = function(b)
-{
-    var a = this.clone();
-    if (b instanceof Fraction) {
-        b = b.clone();  // we scale our argument destructively, so clone
-    } else {
-        b = new Fraction(b);
-    }
-    td = a.denominator;
-    a.rescale(b.denominator);
-    b.rescale(td);
-
-    a.numerator -= b.numerator;
-
-    return a.normalize();
-}
-
-
-Fraction.prototype.multiply = function(b)
-{
-    var a = this.clone();
-    if (b instanceof Fraction)
-    {
-        a.numerator *= b.numerator;
-        a.denominator *= b.denominator;
-    } else if (typeof b === 'number') {
-        a.numerator *= b;
-    } else {
-        return a.multiply(new Fraction(b));
-    }
-    return a.normalize();
-}
-
-Fraction.prototype.divide = function(b)
-{
-    var a = this.clone();
-    if (b instanceof Fraction)
-    {
-        a.numerator *= b.denominator;
-        a.denominator *= b.numerator;
-    } else if (typeof b === 'number') {
-        a.denominator *= b;
-    } else {
-        return a.divide(new Fraction(b));
-    }
-    return a.normalize();
-}
-
-Fraction.prototype.equals = function(b)
-{
-    if (!(b instanceof Fraction)) {
-        b = new Fraction(b);
-    }
-    // fractions that are equal should have equal normalized forms
-    var a = this.clone().normalize();
-    var b = b.clone().normalize();
-    return (a.numerator === b.numerator && a.denominator === b.denominator);
-}
-
-
-/* Utility functions */
-
-/* Destructively normalize the fraction to its smallest representation. 
- * e.g. 4/16 -> 1/4, 14/28 -> 1/2, etc.
- * This is called after all math ops.
- */
-Fraction.prototype.normalize = (function()
-{
-
-    var isFloat = function(n)
-    {
-        return (typeof(n) === 'number' && 
-                ((n > 0 && n % 1 > 0 && n % 1 < 1) || 
-                 (n < 0 && n % -1 < 0 && n % -1 > -1))
-               );
-    }
-
-    var roundToPlaces = function(n, places) 
-    {
-        if (!places) {
-            return Math.round(n);
+    while (j <= primeNumberArray.length) { //While i is less than the length of the array of prime numbers, check divisibility for both numerator and denominator and if there's a common denominator, divide it by that prime number and continue until they no longer reduce and you have to check the next prime number in the array.
+        if (num % primeNumberArray[j] === 0 && den % primeNumberArray[j] === 0) {
+            comDenom = comDenom * primeNumberArray[j];
+            num = num/primeNumberArray[j];
+            den = den/primeNumberArray[j];
         } else {
-            var scalar = Math.pow(10, places);
-            return Math.round(n*scalar)/scalar;
-        }
-    }
-        
-    return (function() {
-
-        // XXX hackish.  Is there a better way to address this issue?
-        //
-        /* first check if we have decimals, and if we do eliminate them
-         * multiply by the 10 ^ number of decimal places in the number
-         * round the number to nine decimal places
-         * to avoid js floating point funnies
-         */
-        if (isFloat(this.denominator)) {
-            var rounded = roundToPlaces(this.denominator, 9);
-            var scaleup = Math.pow(10, rounded.toString().split('.')[1].length);
-            this.denominator = Math.round(this.denominator * scaleup); // this !!! should be a whole number
-            //this.numerator *= scaleup;
-            this.numerator *= scaleup;
-        } 
-        if (isFloat(this.numerator)) {
-            var rounded = roundToPlaces(this.numerator, 9);
-            var scaleup = Math.pow(10, rounded.toString().split('.')[1].length);
-            this.numerator = Math.round(this.numerator * scaleup); // this !!! should be a whole number
-            //this.numerator *= scaleup;
-            this.denominator *= scaleup;
-        }
-        var gcf = Fraction.gcf(this.numerator, this.denominator);
-        this.numerator /= gcf;
-        this.denominator /= gcf;
-        if ((this.numerator < 0 && this.denominator < 0) || (this.numerator > 0 && this.denominator < 0)) {
-            this.numerator *= -1;
-            this.denominator *= -1;
-        }
-        return this;
-    });
-
-})();
-
-
-/* Takes two numbers and returns their greatest common factor.
- */
-Fraction.gcf = function(a, b)
-{
-
-    var common_factors = [];
-    var fa = Fraction.primeFactors(a);
-    var fb = Fraction.primeFactors(b);
-    // for each factor in fa
-    // if it's also in fb
-    // put it into the common factors
-    fa.forEach(function (factor) 
-    { 
-        var i = fb.indexOf(factor);
-        if (i >= 0) {
-            common_factors.push(factor);
-            fb.splice(i,1); // remove from fb
-        }
-    });
-
-    if (common_factors.length === 0)
-        return 1;
-
-    var gcf = (function() {
-        var r = common_factors[0];
-        var i;
-        for (i=1;i<common_factors.length;i++)
-        {
-            r = r * common_factors[i];
-        }
-        return r;
-    })();
-
-    return gcf;
-
-};
-
-
-// Adapted from: 
-// http://www.btinternet.com/~se16/js/factor.htm
-Fraction.primeFactors = function(n) 
-{
-
-    var num = Math.abs(n);
-    var factors = [];
-    var _factor = 2;  // first potential prime factor
-
-    while (_factor * _factor <= num)  // should we keep looking for factors?
-    {      
-      if (num % _factor === 0)  // this is a factor
-        { 
-            factors.push(_factor);  // so keep it
-            num = num/_factor;  // and divide our search point by it
-        }
-        else
-        {
-            _factor++;  // and increment
+            j++;
         }
     }
 
-    if (num != 1)                    // If there is anything left at the end...
-    {                                // ...this must be the last prime factor
-        factors.push(num);           //    so it too should be recorded
-    }
-
-    return factors;                  // Return the prime factors
+    return returnStrings(den, num, integer, type);
 }
 
-module.exports.Fraction = Fraction
+//FRACTY RETURNS THE REDUCED FRACTION AS A STRING.
+function returnStrings (den, num, integer, type) {
+
+    if (den === 1 && num === 1) { //If '1/1'
+        integer = `${type}${(parseInt(integer) + 1).toString()}`; //Add 1 to the integer and return a string without a fraction.
+        return `${integer}`;
+    } else if (num === 0) { //This happens when there are >=15 zeros in the decimal part of your number and the number has an integer part that is not zero and so doesn't coerce to scientific notation.
+        return `${type}${integer}`;
+    } else if (integer == '0') { //If the integer is '0' just return the fraction.
+        return `${type}${num}/${den}`;
+    } else {
+        return `${type}${integer} ${num}/${den}`; //If there's an integer and a fraction return both.
+    }
+
+}
 
 },{}],"src/js/views/recipeView.js":[function(require,module,exports) {
 "use strict";
@@ -1326,7 +1122,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _icons = _interopRequireDefault(require("../../img/icons.svg"));
-var _fractional = require("fractional");
+var _fracty = _interopRequireDefault(require("fracty"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1412,16 +1208,16 @@ function _genetateMarkup() {
   // Inserting the recipe markup into the DOM
 }
 function _generateMarkupIngredient(ing) {
-  return "<li class=\"recipe__ingredient\">\n    <svg class=\"recipe__icon\">\n      <use href=\"".concat(_icons.default, "#icon-check\"></use>\n    </svg>\n    <div class=\"recipe__quantity\">").concat(ing.quantity ? new _fractional.Fraction(ing.quantity()).toString() : '', "</div>\n    <div class=\"recipe__description\">\n      <span class=\"recipe__unit\">").concat(ing.unit, "</span>\n      ").concat(ing.description, "\n    </div>\n  </li>");
+  return "<li class=\"recipe__ingredient\">\n    <svg class=\"recipe__icon\">\n      <use href=\"".concat(_icons.default, "#icon-check\"></use>\n    </svg>\n    <div class=\"recipe__quantity\">").concat(ing.quantity ? (0, _fracty.default)(ing.quantity).toString() : '', "</div>\n    <div class=\"recipe__description\">\n      <span class=\"recipe__unit\">").concat(ing.unit, "</span>\n      ").concat(ing.description, "\n    </div>\n  </li>");
 }
 var _default = exports.default = new RecipeView();
-},{"../../img/icons.svg":"src/img/icons.svg","fractional":"node_modules/fractional/index.js"}],"src/js/model.js":[function(require,module,exports) {
+},{"../../img/icons.svg":"src/img/icons.svg","fracty":"node_modules/fracty/fracty.js"}],"src/js/model.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.state = exports.loadRecipe = void 0;
+exports.state = exports.loadSearchResults = exports.loadRecipe = void 0;
 var _regeneratorRuntime2 = require("regenerator-runtime");
 var _config = require("./config");
 var _helpers = require("./helpers");
@@ -1432,7 +1228,11 @@ function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyri
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 var state = exports.state = {
-  recipe: {}
+  recipe: {},
+  search: {
+    query: '',
+    results: []
+  }
 };
 var loadRecipe = exports.loadRecipe = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(id) {
@@ -1442,7 +1242,7 @@ var loadRecipe = exports.loadRecipe = /*#__PURE__*/function () {
         case 0:
           _context.prev = 0;
           _context.next = 3;
-          return (0, _helpers.getJSON)("".concat(_config.API_URL, "/").concat(id));
+          return (0, _helpers.getJSON)("".concat(_config.API_URL).concat(id));
         case 3:
           data = _context.sent;
           // Extracting recipe data from the response
@@ -1475,7 +1275,92 @@ var loadRecipe = exports.loadRecipe = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-},{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","./config":"src/js/config.js","./helpers":"src/js/helpers.js","./views/recipeView":"src/js/views/recipeView.js"}],"node_modules/core-js/internals/global.js":[function(require,module,exports) {
+var loadSearchResults = exports.loadSearchResults = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(query) {
+    var data;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          state.search.query = query;
+          _context2.next = 4;
+          return (0, _helpers.getJSON)("".concat(_config.API_URL, "?search=").concat(query));
+        case 4:
+          data = _context2.sent;
+          console.log(data);
+          state.search.results = data.data.recipes.map(function (rec) {
+            return {
+              id: rec.id,
+              title: rec.title,
+              publisher: rec.publisher,
+              image: rec.image_url
+            };
+          });
+          _context2.next = 12;
+          break;
+        case 9:
+          _context2.prev = 9;
+          _context2.t0 = _context2["catch"](0);
+          throw _context2.t0;
+        case 12:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2, null, [[0, 9]]);
+  }));
+  return function loadSearchResults(_x2) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+},{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","./config":"src/js/config.js","./helpers":"src/js/helpers.js","./views/recipeView":"src/js/views/recipeView.js"}],"src/js/views/searchView.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : String(i); }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _classPrivateMethodInitSpec(obj, privateSet) { _checkPrivateRedeclaration(obj, privateSet); privateSet.add(obj); }
+function _classPrivateFieldInitSpec(obj, privateMap, value) { _checkPrivateRedeclaration(obj, privateMap); privateMap.set(obj, value); }
+function _checkPrivateRedeclaration(obj, privateCollection) { if (privateCollection.has(obj)) { throw new TypeError("Cannot initialize the same private elements twice on an object"); } }
+function _classPrivateFieldGet(s, a) { return s.get(_assertClassBrand(s, a)); }
+function _assertClassBrand(e, t, n) { if ("function" == typeof e ? e === t : e.has(t)) return arguments.length < 3 ? t : n; throw new TypeError("Private element is not present on this object"); }
+var _parentEl = /*#__PURE__*/new WeakMap();
+var _SearchView_brand = /*#__PURE__*/new WeakSet();
+var SearchView = /*#__PURE__*/function () {
+  function SearchView() {
+    _classCallCheck(this, SearchView);
+    _classPrivateMethodInitSpec(this, _SearchView_brand);
+    _classPrivateFieldInitSpec(this, _parentEl, document.querySelector('.search'));
+  }
+  _createClass(SearchView, [{
+    key: "getQuery",
+    value: function getQuery() {
+      var query = _classPrivateFieldGet(_parentEl, this).querySelector('.search__field').value;
+      _assertClassBrand(_SearchView_brand, this, _clearInput).call(this);
+      return query;
+    }
+  }, {
+    key: "addHandlerSearch",
+    value: function addHandlerSearch(handler) {
+      _classPrivateFieldGet(_parentEl, this).addEventListener('submit', function (e) {
+        e.preventDefault();
+        handler();
+      });
+    }
+  }]);
+  return SearchView;
+}();
+function _clearInput() {
+  _classPrivateFieldGet(_parentEl, this).querySelector('.search__field').value = '';
+}
+var _default = exports.default = new SearchView();
+},{}],"node_modules/core-js/internals/global.js":[function(require,module,exports) {
 var global = arguments[3];
 'use strict';
 var check = function (it) {
@@ -18031,6 +17916,7 @@ module.exports = require('../internals/path');
 
 var model = _interopRequireWildcard(require("./model"));
 var _recipeView = _interopRequireDefault(require("./views/recipeView"));
+var _searchView = _interopRequireDefault(require("./views/searchView"));
 require("core-js/stable");
 require("regenerator-runtime/runtime");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -18085,14 +17971,48 @@ var controlRecipes = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
+var controlSearchResults = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+    var query;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          //Get search query
+          query = _searchView.default.getQuery();
+          if (query) {
+            _context2.next = 4;
+            break;
+          }
+          return _context2.abrupt("return");
+        case 4:
+          _context2.next = 6;
+          return model.loadSearchResults(query);
+        case 6:
+          _context2.next = 10;
+          break;
+        case 8:
+          _context2.prev = 8;
+          _context2.t0 = _context2["catch"](0);
+        case 10:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2, null, [[0, 8]]);
+  }));
+  return function controlSearchResults() {
+    return _ref2.apply(this, arguments);
+  };
+}();
 
 // controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
 
 var init = function init() {
   _recipeView.default.addHandlerRender(controlRecipes);
+  _searchView.default.addHandlerSearch(controlSearchResults);
 };
 init();
-},{"./model":"src/js/model.js","./views/recipeView":"src/js/views/recipeView.js","core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./model":"src/js/model.js","./views/recipeView":"src/js/views/recipeView.js","./views/searchView":"src/js/views/searchView.js","core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

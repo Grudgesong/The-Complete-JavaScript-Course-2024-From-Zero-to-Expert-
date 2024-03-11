@@ -1,5 +1,6 @@
 import * as model from './model';
 import recipeView from './views/recipeView';
+import searchView from './views/searchView';
 
 // Importing 'core-js/stable' polyfill for ECMAScript features that are not natively supported by the browser
 import 'core-js/stable';
@@ -29,9 +30,22 @@ const controlRecipes = async function () {
   }
 };
 
+const controlSearchResults = async function () {
+  try {
+    //Get search query
+    const query = searchView.getQuery();
+
+    if (!query) return;
+
+    //Load Search results
+    await model.loadSearchResults(query);
+  } catch (err) {}
+};
+
 // controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
 
 const init = function () {
   recipeView.addHandlerRender(controlRecipes);
+  searchView.addHandlerSearch(controlSearchResults);
 };
 init();
