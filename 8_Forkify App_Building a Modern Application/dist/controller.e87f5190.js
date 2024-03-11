@@ -117,9 +117,1271 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"src/img/icons.svg":[function(require,module,exports) {
+})({"node_modules/regenerator-runtime/runtime.js":[function(require,module,exports) {
+var define;
+/**
+ * Copyright (c) 2014-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+var runtime = (function (exports) {
+  "use strict";
+
+  var Op = Object.prototype;
+  var hasOwn = Op.hasOwnProperty;
+  var defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; };
+  var undefined; // More compressible than void 0.
+  var $Symbol = typeof Symbol === "function" ? Symbol : {};
+  var iteratorSymbol = $Symbol.iterator || "@@iterator";
+  var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
+  var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+
+  function define(obj, key, value) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+    return obj[key];
+  }
+  try {
+    // IE 8 has a broken Object.defineProperty that only works on DOM objects.
+    define({}, "");
+  } catch (err) {
+    define = function(obj, key, value) {
+      return obj[key] = value;
+    };
+  }
+
+  function wrap(innerFn, outerFn, self, tryLocsList) {
+    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
+    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
+    var generator = Object.create(protoGenerator.prototype);
+    var context = new Context(tryLocsList || []);
+
+    // The ._invoke method unifies the implementations of the .next,
+    // .throw, and .return methods.
+    defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) });
+
+    return generator;
+  }
+  exports.wrap = wrap;
+
+  // Try/catch helper to minimize deoptimizations. Returns a completion
+  // record like context.tryEntries[i].completion. This interface could
+  // have been (and was previously) designed to take a closure to be
+  // invoked without arguments, but in all the cases we care about we
+  // already have an existing method we want to call, so there's no need
+  // to create a new function object. We can even get away with assuming
+  // the method takes exactly one argument, since that happens to be true
+  // in every case, so we don't have to touch the arguments object. The
+  // only additional allocation required is the completion record, which
+  // has a stable shape and so hopefully should be cheap to allocate.
+  function tryCatch(fn, obj, arg) {
+    try {
+      return { type: "normal", arg: fn.call(obj, arg) };
+    } catch (err) {
+      return { type: "throw", arg: err };
+    }
+  }
+
+  var GenStateSuspendedStart = "suspendedStart";
+  var GenStateSuspendedYield = "suspendedYield";
+  var GenStateExecuting = "executing";
+  var GenStateCompleted = "completed";
+
+  // Returning this object from the innerFn has the same effect as
+  // breaking out of the dispatch switch statement.
+  var ContinueSentinel = {};
+
+  // Dummy constructor functions that we use as the .constructor and
+  // .constructor.prototype properties for functions that return Generator
+  // objects. For full spec compliance, you may wish to configure your
+  // minifier not to mangle the names of these two functions.
+  function Generator() {}
+  function GeneratorFunction() {}
+  function GeneratorFunctionPrototype() {}
+
+  // This is a polyfill for %IteratorPrototype% for environments that
+  // don't natively support it.
+  var IteratorPrototype = {};
+  define(IteratorPrototype, iteratorSymbol, function () {
+    return this;
+  });
+
+  var getProto = Object.getPrototypeOf;
+  var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+  if (NativeIteratorPrototype &&
+      NativeIteratorPrototype !== Op &&
+      hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
+    // This environment has a native %IteratorPrototype%; use it instead
+    // of the polyfill.
+    IteratorPrototype = NativeIteratorPrototype;
+  }
+
+  var Gp = GeneratorFunctionPrototype.prototype =
+    Generator.prototype = Object.create(IteratorPrototype);
+  GeneratorFunction.prototype = GeneratorFunctionPrototype;
+  defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: true });
+  defineProperty(
+    GeneratorFunctionPrototype,
+    "constructor",
+    { value: GeneratorFunction, configurable: true }
+  );
+  GeneratorFunction.displayName = define(
+    GeneratorFunctionPrototype,
+    toStringTagSymbol,
+    "GeneratorFunction"
+  );
+
+  // Helper for defining the .next, .throw, and .return methods of the
+  // Iterator interface in terms of a single ._invoke method.
+  function defineIteratorMethods(prototype) {
+    ["next", "throw", "return"].forEach(function(method) {
+      define(prototype, method, function(arg) {
+        return this._invoke(method, arg);
+      });
+    });
+  }
+
+  exports.isGeneratorFunction = function(genFun) {
+    var ctor = typeof genFun === "function" && genFun.constructor;
+    return ctor
+      ? ctor === GeneratorFunction ||
+        // For the native GeneratorFunction constructor, the best we can
+        // do is to check its .name property.
+        (ctor.displayName || ctor.name) === "GeneratorFunction"
+      : false;
+  };
+
+  exports.mark = function(genFun) {
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
+    } else {
+      genFun.__proto__ = GeneratorFunctionPrototype;
+      define(genFun, toStringTagSymbol, "GeneratorFunction");
+    }
+    genFun.prototype = Object.create(Gp);
+    return genFun;
+  };
+
+  // Within the body of any async function, `await x` is transformed to
+  // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
+  // `hasOwn.call(value, "__await")` to determine if the yielded value is
+  // meant to be awaited.
+  exports.awrap = function(arg) {
+    return { __await: arg };
+  };
+
+  function AsyncIterator(generator, PromiseImpl) {
+    function invoke(method, arg, resolve, reject) {
+      var record = tryCatch(generator[method], generator, arg);
+      if (record.type === "throw") {
+        reject(record.arg);
+      } else {
+        var result = record.arg;
+        var value = result.value;
+        if (value &&
+            typeof value === "object" &&
+            hasOwn.call(value, "__await")) {
+          return PromiseImpl.resolve(value.__await).then(function(value) {
+            invoke("next", value, resolve, reject);
+          }, function(err) {
+            invoke("throw", err, resolve, reject);
+          });
+        }
+
+        return PromiseImpl.resolve(value).then(function(unwrapped) {
+          // When a yielded Promise is resolved, its final value becomes
+          // the .value of the Promise<{value,done}> result for the
+          // current iteration.
+          result.value = unwrapped;
+          resolve(result);
+        }, function(error) {
+          // If a rejected Promise was yielded, throw the rejection back
+          // into the async generator function so it can be handled there.
+          return invoke("throw", error, resolve, reject);
+        });
+      }
+    }
+
+    var previousPromise;
+
+    function enqueue(method, arg) {
+      function callInvokeWithMethodAndArg() {
+        return new PromiseImpl(function(resolve, reject) {
+          invoke(method, arg, resolve, reject);
+        });
+      }
+
+      return previousPromise =
+        // If enqueue has been called before, then we want to wait until
+        // all previous Promises have been resolved before calling invoke,
+        // so that results are always delivered in the correct order. If
+        // enqueue has not been called before, then it is important to
+        // call invoke immediately, without waiting on a callback to fire,
+        // so that the async generator function has the opportunity to do
+        // any necessary setup in a predictable way. This predictability
+        // is why the Promise constructor synchronously invokes its
+        // executor callback, and why async functions synchronously
+        // execute code before the first await. Since we implement simple
+        // async functions in terms of async generators, it is especially
+        // important to get this right, even though it requires care.
+        previousPromise ? previousPromise.then(
+          callInvokeWithMethodAndArg,
+          // Avoid propagating failures to Promises returned by later
+          // invocations of the iterator.
+          callInvokeWithMethodAndArg
+        ) : callInvokeWithMethodAndArg();
+    }
+
+    // Define the unified helper method that is used to implement .next,
+    // .throw, and .return (see defineIteratorMethods).
+    defineProperty(this, "_invoke", { value: enqueue });
+  }
+
+  defineIteratorMethods(AsyncIterator.prototype);
+  define(AsyncIterator.prototype, asyncIteratorSymbol, function () {
+    return this;
+  });
+  exports.AsyncIterator = AsyncIterator;
+
+  // Note that simple async functions are implemented on top of
+  // AsyncIterator objects; they just return a Promise for the value of
+  // the final result produced by the iterator.
+  exports.async = function(innerFn, outerFn, self, tryLocsList, PromiseImpl) {
+    if (PromiseImpl === void 0) PromiseImpl = Promise;
+
+    var iter = new AsyncIterator(
+      wrap(innerFn, outerFn, self, tryLocsList),
+      PromiseImpl
+    );
+
+    return exports.isGeneratorFunction(outerFn)
+      ? iter // If outerFn is a generator, return the full iterator.
+      : iter.next().then(function(result) {
+          return result.done ? result.value : iter.next();
+        });
+  };
+
+  function makeInvokeMethod(innerFn, self, context) {
+    var state = GenStateSuspendedStart;
+
+    return function invoke(method, arg) {
+      if (state === GenStateExecuting) {
+        throw new Error("Generator is already running");
+      }
+
+      if (state === GenStateCompleted) {
+        if (method === "throw") {
+          throw arg;
+        }
+
+        // Be forgiving, per GeneratorResume behavior specified since ES2015:
+        // ES2015 spec, step 3: https://262.ecma-international.org/6.0/#sec-generatorresume
+        // Latest spec, step 2: https://tc39.es/ecma262/#sec-generatorresume
+        return doneResult();
+      }
+
+      context.method = method;
+      context.arg = arg;
+
+      while (true) {
+        var delegate = context.delegate;
+        if (delegate) {
+          var delegateResult = maybeInvokeDelegate(delegate, context);
+          if (delegateResult) {
+            if (delegateResult === ContinueSentinel) continue;
+            return delegateResult;
+          }
+        }
+
+        if (context.method === "next") {
+          // Setting context._sent for legacy support of Babel's
+          // function.sent implementation.
+          context.sent = context._sent = context.arg;
+
+        } else if (context.method === "throw") {
+          if (state === GenStateSuspendedStart) {
+            state = GenStateCompleted;
+            throw context.arg;
+          }
+
+          context.dispatchException(context.arg);
+
+        } else if (context.method === "return") {
+          context.abrupt("return", context.arg);
+        }
+
+        state = GenStateExecuting;
+
+        var record = tryCatch(innerFn, self, context);
+        if (record.type === "normal") {
+          // If an exception is thrown from innerFn, we leave state ===
+          // GenStateExecuting and loop back for another invocation.
+          state = context.done
+            ? GenStateCompleted
+            : GenStateSuspendedYield;
+
+          if (record.arg === ContinueSentinel) {
+            continue;
+          }
+
+          return {
+            value: record.arg,
+            done: context.done
+          };
+
+        } else if (record.type === "throw") {
+          state = GenStateCompleted;
+          // Dispatch the exception by looping back around to the
+          // context.dispatchException(context.arg) call above.
+          context.method = "throw";
+          context.arg = record.arg;
+        }
+      }
+    };
+  }
+
+  // Call delegate.iterator[context.method](context.arg) and handle the
+  // result, either by returning a { value, done } result from the
+  // delegate iterator, or by modifying context.method and context.arg,
+  // setting context.delegate to null, and returning the ContinueSentinel.
+  function maybeInvokeDelegate(delegate, context) {
+    var methodName = context.method;
+    var method = delegate.iterator[methodName];
+    if (method === undefined) {
+      // A .throw or .return when the delegate iterator has no .throw
+      // method, or a missing .next method, always terminate the
+      // yield* loop.
+      context.delegate = null;
+
+      // Note: ["return"] must be used for ES3 parsing compatibility.
+      if (methodName === "throw" && delegate.iterator["return"]) {
+        // If the delegate iterator has a return method, give it a
+        // chance to clean up.
+        context.method = "return";
+        context.arg = undefined;
+        maybeInvokeDelegate(delegate, context);
+
+        if (context.method === "throw") {
+          // If maybeInvokeDelegate(context) changed context.method from
+          // "return" to "throw", let that override the TypeError below.
+          return ContinueSentinel;
+        }
+      }
+      if (methodName !== "return") {
+        context.method = "throw";
+        context.arg = new TypeError(
+          "The iterator does not provide a '" + methodName + "' method");
+      }
+
+      return ContinueSentinel;
+    }
+
+    var record = tryCatch(method, delegate.iterator, context.arg);
+
+    if (record.type === "throw") {
+      context.method = "throw";
+      context.arg = record.arg;
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    var info = record.arg;
+
+    if (! info) {
+      context.method = "throw";
+      context.arg = new TypeError("iterator result is not an object");
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    if (info.done) {
+      // Assign the result of the finished delegate to the temporary
+      // variable specified by delegate.resultName (see delegateYield).
+      context[delegate.resultName] = info.value;
+
+      // Resume execution at the desired location (see delegateYield).
+      context.next = delegate.nextLoc;
+
+      // If context.method was "throw" but the delegate handled the
+      // exception, let the outer generator proceed normally. If
+      // context.method was "next", forget context.arg since it has been
+      // "consumed" by the delegate iterator. If context.method was
+      // "return", allow the original .return call to continue in the
+      // outer generator.
+      if (context.method !== "return") {
+        context.method = "next";
+        context.arg = undefined;
+      }
+
+    } else {
+      // Re-yield the result returned by the delegate method.
+      return info;
+    }
+
+    // The delegate iterator is finished, so forget it and continue with
+    // the outer generator.
+    context.delegate = null;
+    return ContinueSentinel;
+  }
+
+  // Define Generator.prototype.{next,throw,return} in terms of the
+  // unified ._invoke helper method.
+  defineIteratorMethods(Gp);
+
+  define(Gp, toStringTagSymbol, "Generator");
+
+  // A Generator should always return itself as the iterator object when the
+  // @@iterator function is called on it. Some browsers' implementations of the
+  // iterator prototype chain incorrectly implement this, causing the Generator
+  // object to not be returned from this call. This ensures that doesn't happen.
+  // See https://github.com/facebook/regenerator/issues/274 for more details.
+  define(Gp, iteratorSymbol, function() {
+    return this;
+  });
+
+  define(Gp, "toString", function() {
+    return "[object Generator]";
+  });
+
+  function pushTryEntry(locs) {
+    var entry = { tryLoc: locs[0] };
+
+    if (1 in locs) {
+      entry.catchLoc = locs[1];
+    }
+
+    if (2 in locs) {
+      entry.finallyLoc = locs[2];
+      entry.afterLoc = locs[3];
+    }
+
+    this.tryEntries.push(entry);
+  }
+
+  function resetTryEntry(entry) {
+    var record = entry.completion || {};
+    record.type = "normal";
+    delete record.arg;
+    entry.completion = record;
+  }
+
+  function Context(tryLocsList) {
+    // The root entry object (effectively a try statement without a catch
+    // or a finally block) gives us a place to store values thrown from
+    // locations where there is no enclosing try statement.
+    this.tryEntries = [{ tryLoc: "root" }];
+    tryLocsList.forEach(pushTryEntry, this);
+    this.reset(true);
+  }
+
+  exports.keys = function(val) {
+    var object = Object(val);
+    var keys = [];
+    for (var key in object) {
+      keys.push(key);
+    }
+    keys.reverse();
+
+    // Rather than returning an object with a next method, we keep
+    // things simple and return the next function itself.
+    return function next() {
+      while (keys.length) {
+        var key = keys.pop();
+        if (key in object) {
+          next.value = key;
+          next.done = false;
+          return next;
+        }
+      }
+
+      // To avoid creating an additional object, we just hang the .value
+      // and .done properties off the next function object itself. This
+      // also ensures that the minifier will not anonymize the function.
+      next.done = true;
+      return next;
+    };
+  };
+
+  function values(iterable) {
+    if (iterable != null) {
+      var iteratorMethod = iterable[iteratorSymbol];
+      if (iteratorMethod) {
+        return iteratorMethod.call(iterable);
+      }
+
+      if (typeof iterable.next === "function") {
+        return iterable;
+      }
+
+      if (!isNaN(iterable.length)) {
+        var i = -1, next = function next() {
+          while (++i < iterable.length) {
+            if (hasOwn.call(iterable, i)) {
+              next.value = iterable[i];
+              next.done = false;
+              return next;
+            }
+          }
+
+          next.value = undefined;
+          next.done = true;
+
+          return next;
+        };
+
+        return next.next = next;
+      }
+    }
+
+    throw new TypeError(typeof iterable + " is not iterable");
+  }
+  exports.values = values;
+
+  function doneResult() {
+    return { value: undefined, done: true };
+  }
+
+  Context.prototype = {
+    constructor: Context,
+
+    reset: function(skipTempReset) {
+      this.prev = 0;
+      this.next = 0;
+      // Resetting context._sent for legacy support of Babel's
+      // function.sent implementation.
+      this.sent = this._sent = undefined;
+      this.done = false;
+      this.delegate = null;
+
+      this.method = "next";
+      this.arg = undefined;
+
+      this.tryEntries.forEach(resetTryEntry);
+
+      if (!skipTempReset) {
+        for (var name in this) {
+          // Not sure about the optimal order of these conditions:
+          if (name.charAt(0) === "t" &&
+              hasOwn.call(this, name) &&
+              !isNaN(+name.slice(1))) {
+            this[name] = undefined;
+          }
+        }
+      }
+    },
+
+    stop: function() {
+      this.done = true;
+
+      var rootEntry = this.tryEntries[0];
+      var rootRecord = rootEntry.completion;
+      if (rootRecord.type === "throw") {
+        throw rootRecord.arg;
+      }
+
+      return this.rval;
+    },
+
+    dispatchException: function(exception) {
+      if (this.done) {
+        throw exception;
+      }
+
+      var context = this;
+      function handle(loc, caught) {
+        record.type = "throw";
+        record.arg = exception;
+        context.next = loc;
+
+        if (caught) {
+          // If the dispatched exception was caught by a catch block,
+          // then let that catch block handle the exception normally.
+          context.method = "next";
+          context.arg = undefined;
+        }
+
+        return !! caught;
+      }
+
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        var record = entry.completion;
+
+        if (entry.tryLoc === "root") {
+          // Exception thrown outside of any try block that could handle
+          // it, so set the completion value of the entire function to
+          // throw the exception.
+          return handle("end");
+        }
+
+        if (entry.tryLoc <= this.prev) {
+          var hasCatch = hasOwn.call(entry, "catchLoc");
+          var hasFinally = hasOwn.call(entry, "finallyLoc");
+
+          if (hasCatch && hasFinally) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            } else if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else if (hasCatch) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            }
+
+          } else if (hasFinally) {
+            if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else {
+            throw new Error("try statement without catch or finally");
+          }
+        }
+      }
+    },
+
+    abrupt: function(type, arg) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc <= this.prev &&
+            hasOwn.call(entry, "finallyLoc") &&
+            this.prev < entry.finallyLoc) {
+          var finallyEntry = entry;
+          break;
+        }
+      }
+
+      if (finallyEntry &&
+          (type === "break" ||
+           type === "continue") &&
+          finallyEntry.tryLoc <= arg &&
+          arg <= finallyEntry.finallyLoc) {
+        // Ignore the finally entry if control is not jumping to a
+        // location outside the try/catch block.
+        finallyEntry = null;
+      }
+
+      var record = finallyEntry ? finallyEntry.completion : {};
+      record.type = type;
+      record.arg = arg;
+
+      if (finallyEntry) {
+        this.method = "next";
+        this.next = finallyEntry.finallyLoc;
+        return ContinueSentinel;
+      }
+
+      return this.complete(record);
+    },
+
+    complete: function(record, afterLoc) {
+      if (record.type === "throw") {
+        throw record.arg;
+      }
+
+      if (record.type === "break" ||
+          record.type === "continue") {
+        this.next = record.arg;
+      } else if (record.type === "return") {
+        this.rval = this.arg = record.arg;
+        this.method = "return";
+        this.next = "end";
+      } else if (record.type === "normal" && afterLoc) {
+        this.next = afterLoc;
+      }
+
+      return ContinueSentinel;
+    },
+
+    finish: function(finallyLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.finallyLoc === finallyLoc) {
+          this.complete(entry.completion, entry.afterLoc);
+          resetTryEntry(entry);
+          return ContinueSentinel;
+        }
+      }
+    },
+
+    "catch": function(tryLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc === tryLoc) {
+          var record = entry.completion;
+          if (record.type === "throw") {
+            var thrown = record.arg;
+            resetTryEntry(entry);
+          }
+          return thrown;
+        }
+      }
+
+      // The context.catch method must only be called with a location
+      // argument that corresponds to a known catch block.
+      throw new Error("illegal catch attempt");
+    },
+
+    delegateYield: function(iterable, resultName, nextLoc) {
+      this.delegate = {
+        iterator: values(iterable),
+        resultName: resultName,
+        nextLoc: nextLoc
+      };
+
+      if (this.method === "next") {
+        // Deliberately forget the last sent value so that we don't
+        // accidentally pass it on to the delegate.
+        this.arg = undefined;
+      }
+
+      return ContinueSentinel;
+    }
+  };
+
+  // Regardless of whether this script is executing as a CommonJS module
+  // or not, return the runtime object so that we can declare the variable
+  // regeneratorRuntime in the outer scope, which allows this module to be
+  // injected easily by `bin/regenerator --include-runtime script.js`.
+  return exports;
+
+}(
+  // If this script is executing as a CommonJS module, use module.exports
+  // as the regeneratorRuntime namespace. Otherwise create a new empty
+  // object. Either way, the resulting object will be used to initialize
+  // the regeneratorRuntime variable at the top of this file.
+  typeof module === "object" ? module.exports : {}
+));
+
+try {
+  regeneratorRuntime = runtime;
+} catch (accidentalStrictMode) {
+  // This module should not be running in strict mode, so the above
+  // assignment should always work unless something is misconfigured. Just
+  // in case runtime.js accidentally runs in strict mode, in modern engines
+  // we can explicitly access globalThis. In older engines we can escape
+  // strict mode using a global Function call. This could conceivably fail
+  // if a Content Security Policy forbids using Function, but in that case
+  // the proper solution is to fix the accidental strict mode problem. If
+  // you've misconfigured your bundler to force strict mode and applied a
+  // CSP to forbid Function, and you're not willing to fix either of those
+  // problems, please detail your unique predicament in a GitHub issue.
+  if (typeof globalThis === "object") {
+    globalThis.regeneratorRuntime = runtime;
+  } else {
+    Function("r", "regeneratorRuntime = r")(runtime);
+  }
+}
+
+},{}],"src/js/model.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.state = exports.loadRecipe = void 0;
+var _regeneratorRuntime2 = require("regenerator-runtime");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator.return && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, catch: function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+var state = exports.state = {
+  recipe: {}
+};
+var loadRecipe = exports.loadRecipe = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(id) {
+    var res, data, recipe;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.prev = 0;
+          _context.next = 3;
+          return fetch("https://forkify-api.herokuapp.com/api/v2/recipes/".concat(id));
+        case 3:
+          res = _context.sent;
+          _context.next = 6;
+          return res.json();
+        case 6:
+          data = _context.sent;
+          if (res.ok) {
+            _context.next = 9;
+            break;
+          }
+          throw new Error("".concat(data.message, " (").concat(res.status, ")"));
+        case 9:
+          // Extracting recipe data from the response
+          recipe = data.data.recipe; //data.data.recipe
+          state.recipe = {
+            id: recipe.id,
+            title: recipe.title,
+            publisher: recipe.publisher,
+            sourceUrl: recipe.source_url,
+            image: recipe.image_url,
+            servings: recipe.servings,
+            cookingTime: recipe.cooking_time,
+            ingredients: recipe.ingredients
+          }; // Restructuring the recipe data
+          _context.next = 16;
+          break;
+        case 13:
+          _context.prev = 13;
+          _context.t0 = _context["catch"](0);
+          alert(_context.t0);
+        case 16:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee, null, [[0, 13]]);
+  }));
+  return function loadRecipe(_x) {
+    return _ref.apply(this, arguments);
+  };
+}();
+},{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js"}],"src/img/icons.svg":[function(require,module,exports) {
 module.exports = "/icons.ae3c38d5.svg";
-},{}],"node_modules/core-js/internals/global.js":[function(require,module,exports) {
+},{}],"node_modules/fractional/index.js":[function(require,module,exports) {
+/*
+fraction.js
+A Javascript fraction library.
+
+Copyright (c) 2009  Erik Garrison <erik@hypervolu.me>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
+
+
+/* Fractions */
+/* 
+ *
+ * Fraction objects are comprised of a numerator and a denomenator.  These
+ * values can be accessed at fraction.numerator and fraction.denomenator.
+ *
+ * Fractions are always returned and stored in lowest-form normalized format.
+ * This is accomplished via Fraction.normalize.
+ *
+ * The following mathematical operations on fractions are supported:
+ *
+ * Fraction.equals
+ * Fraction.add
+ * Fraction.subtract
+ * Fraction.multiply
+ * Fraction.divide
+ *
+ * These operations accept both numbers and fraction objects.  (Best results
+ * are guaranteed when the input is a fraction object.)  They all return a new
+ * Fraction object.
+ *
+ * Usage:
+ *
+ * TODO
+ *
+ */
+
+/*
+ * The Fraction constructor takes one of:
+ *   an explicit numerator (integer) and denominator (integer),
+ *   a string representation of the fraction (string),
+ *   or a floating-point number (float)
+ *
+ * These initialization methods are provided for convenience.  Because of
+ * rounding issues the best results will be given when the fraction is
+ * constructed from an explicit integer numerator and denomenator, and not a
+ * decimal number.
+ *
+ *
+ * e.g. new Fraction(1, 2) --> 1/2
+ *      new Fraction('1/2') --> 1/2
+ *      new Fraction('2 3/4') --> 11/4  (prints as 2 3/4)
+ *
+ */
+Fraction = function(numerator, denominator)
+{
+    /* double argument invocation */
+    if (typeof numerator !== 'undefined' && denominator) {
+        if (typeof(numerator) === 'number' && typeof(denominator) === 'number') {
+            this.numerator = numerator;
+            this.denominator = denominator;
+        } else if (typeof(numerator) === 'string' && typeof(denominator) === 'string') {
+            // what are they?
+            // hmm....
+            // assume they are ints?
+            this.numerator = parseInt(numerator);
+            this.denominator = parseInt(denominator);
+        }
+    /* single-argument invocation */
+    } else if (typeof denominator === 'undefined') {
+        num = numerator; // swap variable names for legibility
+        if (typeof(num) === 'number') {  // just a straight number init
+            this.numerator = num;
+            this.denominator = 1;
+        } else if (typeof(num) === 'string') {
+            var a, b;  // hold the first and second part of the fraction, e.g. a = '1' and b = '2/3' in 1 2/3
+                       // or a = '2/3' and b = undefined if we are just passed a single-part number
+            var arr = num.split(' ')
+            if (arr[0]) a = arr[0]
+            if (arr[1]) b = arr[1]
+            /* compound fraction e.g. 'A B/C' */
+            //  if a is an integer ...
+            if (a % 1 === 0 && b && b.match('/')) {
+                return (new Fraction(a)).add(new Fraction(b));
+            } else if (a && !b) {
+                /* simple fraction e.g. 'A/B' */
+                if (typeof(a) === 'string' && a.match('/')) {
+                    // it's not a whole number... it's actually a fraction without a whole part written
+                    var f = a.split('/');
+                    this.numerator = f[0]; this.denominator = f[1];
+                /* string floating point */
+                } else if (typeof(a) === 'string' && a.match('\.')) {
+                    return new Fraction(parseFloat(a));
+                /* whole number e.g. 'A' */
+                } else { // just passed a whole number as a string
+                    this.numerator = parseInt(a);
+                    this.denominator = 1;
+                }
+            } else {
+                return undefined; // could not parse
+            }
+        }
+    }
+    this.normalize();
+}
+
+
+Fraction.prototype.clone = function()
+{
+    return new Fraction(this.numerator, this.denominator);
+}
+
+
+/* pretty-printer, converts fractions into whole numbers and fractions */
+Fraction.prototype.toString = function()
+{
+    if (this.denominator==='NaN') return 'NaN'
+    var wholepart = (this.numerator/this.denominator>0) ?
+      Math.floor(this.numerator / this.denominator) :
+      Math.ceil(this.numerator / this.denominator)
+    var numerator = this.numerator % this.denominator 
+    var denominator = this.denominator;
+    var result = []; 
+    if (wholepart != 0)  
+        result.push(wholepart);
+    if (numerator != 0)  
+        result.push(((wholepart===0) ? numerator : Math.abs(numerator)) + '/' + denominator);
+    return result.length > 0 ? result.join(' ') : 0;
+}
+
+
+/* destructively rescale the fraction by some integral factor */
+Fraction.prototype.rescale = function(factor)
+{
+    this.numerator *= factor;
+    this.denominator *= factor;
+    return this;
+}
+
+
+Fraction.prototype.add = function(b)
+{
+    var a = this.clone();
+    if (b instanceof Fraction) {
+        b = b.clone();
+    } else {
+        b = new Fraction(b);
+    }
+    td = a.denominator;
+    a.rescale(b.denominator);
+    b.rescale(td);
+
+    a.numerator += b.numerator;
+
+    return a.normalize();
+}
+
+
+Fraction.prototype.subtract = function(b)
+{
+    var a = this.clone();
+    if (b instanceof Fraction) {
+        b = b.clone();  // we scale our argument destructively, so clone
+    } else {
+        b = new Fraction(b);
+    }
+    td = a.denominator;
+    a.rescale(b.denominator);
+    b.rescale(td);
+
+    a.numerator -= b.numerator;
+
+    return a.normalize();
+}
+
+
+Fraction.prototype.multiply = function(b)
+{
+    var a = this.clone();
+    if (b instanceof Fraction)
+    {
+        a.numerator *= b.numerator;
+        a.denominator *= b.denominator;
+    } else if (typeof b === 'number') {
+        a.numerator *= b;
+    } else {
+        return a.multiply(new Fraction(b));
+    }
+    return a.normalize();
+}
+
+Fraction.prototype.divide = function(b)
+{
+    var a = this.clone();
+    if (b instanceof Fraction)
+    {
+        a.numerator *= b.denominator;
+        a.denominator *= b.numerator;
+    } else if (typeof b === 'number') {
+        a.denominator *= b;
+    } else {
+        return a.divide(new Fraction(b));
+    }
+    return a.normalize();
+}
+
+Fraction.prototype.equals = function(b)
+{
+    if (!(b instanceof Fraction)) {
+        b = new Fraction(b);
+    }
+    // fractions that are equal should have equal normalized forms
+    var a = this.clone().normalize();
+    var b = b.clone().normalize();
+    return (a.numerator === b.numerator && a.denominator === b.denominator);
+}
+
+
+/* Utility functions */
+
+/* Destructively normalize the fraction to its smallest representation. 
+ * e.g. 4/16 -> 1/4, 14/28 -> 1/2, etc.
+ * This is called after all math ops.
+ */
+Fraction.prototype.normalize = (function()
+{
+
+    var isFloat = function(n)
+    {
+        return (typeof(n) === 'number' && 
+                ((n > 0 && n % 1 > 0 && n % 1 < 1) || 
+                 (n < 0 && n % -1 < 0 && n % -1 > -1))
+               );
+    }
+
+    var roundToPlaces = function(n, places) 
+    {
+        if (!places) {
+            return Math.round(n);
+        } else {
+            var scalar = Math.pow(10, places);
+            return Math.round(n*scalar)/scalar;
+        }
+    }
+        
+    return (function() {
+
+        // XXX hackish.  Is there a better way to address this issue?
+        //
+        /* first check if we have decimals, and if we do eliminate them
+         * multiply by the 10 ^ number of decimal places in the number
+         * round the number to nine decimal places
+         * to avoid js floating point funnies
+         */
+        if (isFloat(this.denominator)) {
+            var rounded = roundToPlaces(this.denominator, 9);
+            var scaleup = Math.pow(10, rounded.toString().split('.')[1].length);
+            this.denominator = Math.round(this.denominator * scaleup); // this !!! should be a whole number
+            //this.numerator *= scaleup;
+            this.numerator *= scaleup;
+        } 
+        if (isFloat(this.numerator)) {
+            var rounded = roundToPlaces(this.numerator, 9);
+            var scaleup = Math.pow(10, rounded.toString().split('.')[1].length);
+            this.numerator = Math.round(this.numerator * scaleup); // this !!! should be a whole number
+            //this.numerator *= scaleup;
+            this.denominator *= scaleup;
+        }
+        var gcf = Fraction.gcf(this.numerator, this.denominator);
+        this.numerator /= gcf;
+        this.denominator /= gcf;
+        if ((this.numerator < 0 && this.denominator < 0) || (this.numerator > 0 && this.denominator < 0)) {
+            this.numerator *= -1;
+            this.denominator *= -1;
+        }
+        return this;
+    });
+
+})();
+
+
+/* Takes two numbers and returns their greatest common factor.
+ */
+Fraction.gcf = function(a, b)
+{
+
+    var common_factors = [];
+    var fa = Fraction.primeFactors(a);
+    var fb = Fraction.primeFactors(b);
+    // for each factor in fa
+    // if it's also in fb
+    // put it into the common factors
+    fa.forEach(function (factor) 
+    { 
+        var i = fb.indexOf(factor);
+        if (i >= 0) {
+            common_factors.push(factor);
+            fb.splice(i,1); // remove from fb
+        }
+    });
+
+    if (common_factors.length === 0)
+        return 1;
+
+    var gcf = (function() {
+        var r = common_factors[0];
+        var i;
+        for (i=1;i<common_factors.length;i++)
+        {
+            r = r * common_factors[i];
+        }
+        return r;
+    })();
+
+    return gcf;
+
+};
+
+
+// Adapted from: 
+// http://www.btinternet.com/~se16/js/factor.htm
+Fraction.primeFactors = function(n) 
+{
+
+    var num = Math.abs(n);
+    var factors = [];
+    var _factor = 2;  // first potential prime factor
+
+    while (_factor * _factor <= num)  // should we keep looking for factors?
+    {      
+      if (num % _factor === 0)  // this is a factor
+        { 
+            factors.push(_factor);  // so keep it
+            num = num/_factor;  // and divide our search point by it
+        }
+        else
+        {
+            _factor++;  // and increment
+        }
+    }
+
+    if (num != 1)                    // If there is anything left at the end...
+    {                                // ...this must be the last prime factor
+        factors.push(num);           //    so it too should be recorded
+    }
+
+    return factors;                  // Return the prime factors
+}
+
+module.exports.Fraction = Fraction
+
+},{}],"src/js/views/recipeView.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _icons = _interopRequireDefault(require("../../img/icons.svg"));
+var _fractional = require("fractional");
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : String(i); }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _classPrivateMethodInitSpec(obj, privateSet) { _checkPrivateRedeclaration(obj, privateSet); privateSet.add(obj); }
+function _classPrivateFieldInitSpec(obj, privateMap, value) { _checkPrivateRedeclaration(obj, privateMap); privateMap.set(obj, value); }
+function _checkPrivateRedeclaration(obj, privateCollection) { if (privateCollection.has(obj)) { throw new TypeError("Cannot initialize the same private elements twice on an object"); } }
+function _classPrivateFieldGet(s, a) { return s.get(_assertClassBrand(s, a)); }
+function _classPrivateFieldSet(s, a, r) { return s.set(_assertClassBrand(s, a), r), r; }
+function _assertClassBrand(e, t, n) { if ("function" == typeof e ? e === t : e.has(t)) return arguments.length < 3 ? t : n; throw new TypeError("Private element is not present on this object"); }
+var _parentElement = /*#__PURE__*/new WeakMap();
+var _data = /*#__PURE__*/new WeakMap();
+var _RecipeView_brand = /*#__PURE__*/new WeakSet();
+var RecipeView = /*#__PURE__*/function () {
+  function RecipeView() {
+    _classCallCheck(this, RecipeView);
+    _classPrivateMethodInitSpec(this, _RecipeView_brand);
+    _classPrivateFieldInitSpec(this, _parentElement, document.querySelector('.recipe'));
+    _classPrivateFieldInitSpec(this, _data, void 0);
+    // Function to render a spinner inside a specified parent element
+    _defineProperty(this, "renderSpinner", function () {
+      // Creating markup for the spinner
+      var markup = "\n  <div class=\"spinner\">\n          <svg>\n            <use href=\"".concat(_icons.default, "#icon-loader\"></use>\n          </svg>\n        </div>");
+
+      // Clearing the parent element and inserting the spinner markup
+      _assertClassBrand(_RecipeView_brand, this, _clear);
+      _classPrivateFieldGet(_parentElement, this).insertAdjacentHTML('afterbegin', markup);
+    });
+  }
+  _createClass(RecipeView, [{
+    key: "render",
+    value: function render(data) {
+      _classPrivateFieldSet(_data, this, data);
+      var markup = _assertClassBrand(_RecipeView_brand, this, _genetateMarkup).call(this);
+      _assertClassBrand(_RecipeView_brand, this, _clear).call(this);
+      _classPrivateFieldGet(_parentElement, this).insertAdjacentHTML('afterbegin', markup);
+    }
+  }]);
+  return RecipeView;
+}();
+function _clear() {
+  _classPrivateFieldGet(_parentElement, this).innerHTML = '';
+}
+function _genetateMarkup() {
+  return "\n    <figure class=\"recipe__fig\">\n          <img src=\"".concat(_classPrivateFieldGet(_data, this).image, "\" alt=\"").concat(_classPrivateFieldGet(_data, this).title, "\" class=\"recipe__img\" />\n          <h1 class=\"recipe__title\">\n            <span>").concat(_classPrivateFieldGet(_data, this).title, "</span>\n          </h1>\n        </figure>\n\n        <div class=\"recipe__details\">\n          <div class=\"recipe__info\">\n            <svg class=\"recipe__info-icon\">\n              <use href=\"").concat(_icons.default, "#icon-clock\"></use>\n            </svg>\n            <span class=\"recipe__info-data recipe__info-data--minutes\">").concat(_classPrivateFieldGet(_data, this).cookingTime, "</span>\n            <span class=\"recipe__info-text\">minutes</span>\n          </div>\n          <div class=\"recipe__info\">\n            <svg class=\"recipe__info-icon\">\n              <use href=\"").concat(_icons.default, "#icon-users\"></use>\n            </svg>\n            <span class=\"recipe__info-data recipe__info-data--people\">").concat(_classPrivateFieldGet(_data, this).servings, "</span>\n            <span class=\"recipe__info-text\">servings</span>\n\n            <div class=\"recipe__info-buttons\">\n              <button class=\"btn--tiny btn--increase-servings\">\n                <svg>\n                  <use href=\"").concat(_icons.default, "#icon-minus-circle\"></use>\n                </svg>\n              </button>\n              <button class=\"btn--tiny btn--increase-servings\">\n                <svg>\n                  <use href=\"").concat(_icons.default, "#icon-plus-circle\"></use>\n                </svg>\n              </button>\n            </div>\n          </div>\n\n          <div class=\"recipe__user-generated\">\n            <svg>\n              <use href=\"").concat(_icons.default, "#icon-user\"></use>\n            </svg>\n          </div>\n          <button class=\"btn--round\">\n            <svg class=\"\">\n              <use href=\"").concat(_icons.default, "#icon-bookmark-fill\"></use>\n            </svg>\n          </button>\n        </div>\n\n        <div class=\"recipe__ingredients\">\n          <h2 class=\"heading--2\">Recipe ingredients</h2>\n          <ul class=\"recipe__ingredient-list\">\n            ").concat(_classPrivateFieldGet(_data, this).ingredients.map(_assertClassBrand(_RecipeView_brand, this, _generateMarkupIngredient)).join(''), "\n          </ul>\n        </div>\n\n        <div class=\"recipe__directions\">\n          <h2 class=\"heading--2\">How to cook it</h2>\n          <p class=\"recipe__directions-text\">\n            This recipe was carefully designed and tested by\n            <span class=\"recipe__publisher\">").concat(_classPrivateFieldGet(_data, this).publisher, "</span>. Please check out\n            directions at their website.\n          </p>\n          <a\n            class=\"btn--small recipe__btn\"\n            href=\"").concat(_classPrivateFieldGet(_data, this).sourceUrl, "\"\n            target=\"_blank\"\n          >\n            <span>Directions</span>\n            <svg class=\"search__icon\">\n              <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n            </svg>\n          </a>\n        </div>\n    ");
+
+  // Inserting the recipe markup into the DOM
+}
+function _generateMarkupIngredient(ing) {
+  return "<li class=\"recipe__ingredient\">\n    <svg class=\"recipe__icon\">\n      <use href=\"".concat(_icons.default, "#icon-check\"></use>\n    </svg>\n    <div class=\"recipe__quantity\">").concat(ing.quantity ? new _fractional.Fraction(ing.quantity()).toString() : '', "</div>\n    <div class=\"recipe__description\">\n      <span class=\"recipe__unit\">").concat(ing.unit, "</span>\n      ").concat(ing.description, "\n    </div>\n  </li>");
+}
+var _default = exports.default = new RecipeView();
+},{"../../img/icons.svg":"src/img/icons.svg","fractional":"node_modules/fractional/index.js"}],"node_modules/core-js/internals/global.js":[function(require,module,exports) {
 var global = arguments[3];
 'use strict';
 var check = function (it) {
@@ -16670,777 +17932,16 @@ require('../modules/web.url-search-params.size');
 
 module.exports = require('../internals/path');
 
-},{"../modules/es.symbol":"node_modules/core-js/modules/es.symbol.js","../modules/es.symbol.description":"node_modules/core-js/modules/es.symbol.description.js","../modules/es.symbol.async-iterator":"node_modules/core-js/modules/es.symbol.async-iterator.js","../modules/es.symbol.has-instance":"node_modules/core-js/modules/es.symbol.has-instance.js","../modules/es.symbol.is-concat-spreadable":"node_modules/core-js/modules/es.symbol.is-concat-spreadable.js","../modules/es.symbol.iterator":"node_modules/core-js/modules/es.symbol.iterator.js","../modules/es.symbol.match":"node_modules/core-js/modules/es.symbol.match.js","../modules/es.symbol.match-all":"node_modules/core-js/modules/es.symbol.match-all.js","../modules/es.symbol.replace":"node_modules/core-js/modules/es.symbol.replace.js","../modules/es.symbol.search":"node_modules/core-js/modules/es.symbol.search.js","../modules/es.symbol.species":"node_modules/core-js/modules/es.symbol.species.js","../modules/es.symbol.split":"node_modules/core-js/modules/es.symbol.split.js","../modules/es.symbol.to-primitive":"node_modules/core-js/modules/es.symbol.to-primitive.js","../modules/es.symbol.to-string-tag":"node_modules/core-js/modules/es.symbol.to-string-tag.js","../modules/es.symbol.unscopables":"node_modules/core-js/modules/es.symbol.unscopables.js","../modules/es.error.cause":"node_modules/core-js/modules/es.error.cause.js","../modules/es.error.to-string":"node_modules/core-js/modules/es.error.to-string.js","../modules/es.aggregate-error":"node_modules/core-js/modules/es.aggregate-error.js","../modules/es.aggregate-error.cause":"node_modules/core-js/modules/es.aggregate-error.cause.js","../modules/es.array.at":"node_modules/core-js/modules/es.array.at.js","../modules/es.array.concat":"node_modules/core-js/modules/es.array.concat.js","../modules/es.array.copy-within":"node_modules/core-js/modules/es.array.copy-within.js","../modules/es.array.every":"node_modules/core-js/modules/es.array.every.js","../modules/es.array.fill":"node_modules/core-js/modules/es.array.fill.js","../modules/es.array.filter":"node_modules/core-js/modules/es.array.filter.js","../modules/es.array.find":"node_modules/core-js/modules/es.array.find.js","../modules/es.array.find-index":"node_modules/core-js/modules/es.array.find-index.js","../modules/es.array.find-last":"node_modules/core-js/modules/es.array.find-last.js","../modules/es.array.find-last-index":"node_modules/core-js/modules/es.array.find-last-index.js","../modules/es.array.flat":"node_modules/core-js/modules/es.array.flat.js","../modules/es.array.flat-map":"node_modules/core-js/modules/es.array.flat-map.js","../modules/es.array.for-each":"node_modules/core-js/modules/es.array.for-each.js","../modules/es.array.from":"node_modules/core-js/modules/es.array.from.js","../modules/es.array.includes":"node_modules/core-js/modules/es.array.includes.js","../modules/es.array.index-of":"node_modules/core-js/modules/es.array.index-of.js","../modules/es.array.is-array":"node_modules/core-js/modules/es.array.is-array.js","../modules/es.array.iterator":"node_modules/core-js/modules/es.array.iterator.js","../modules/es.array.join":"node_modules/core-js/modules/es.array.join.js","../modules/es.array.last-index-of":"node_modules/core-js/modules/es.array.last-index-of.js","../modules/es.array.map":"node_modules/core-js/modules/es.array.map.js","../modules/es.array.of":"node_modules/core-js/modules/es.array.of.js","../modules/es.array.push":"node_modules/core-js/modules/es.array.push.js","../modules/es.array.reduce":"node_modules/core-js/modules/es.array.reduce.js","../modules/es.array.reduce-right":"node_modules/core-js/modules/es.array.reduce-right.js","../modules/es.array.reverse":"node_modules/core-js/modules/es.array.reverse.js","../modules/es.array.slice":"node_modules/core-js/modules/es.array.slice.js","../modules/es.array.some":"node_modules/core-js/modules/es.array.some.js","../modules/es.array.sort":"node_modules/core-js/modules/es.array.sort.js","../modules/es.array.species":"node_modules/core-js/modules/es.array.species.js","../modules/es.array.splice":"node_modules/core-js/modules/es.array.splice.js","../modules/es.array.to-reversed":"node_modules/core-js/modules/es.array.to-reversed.js","../modules/es.array.to-sorted":"node_modules/core-js/modules/es.array.to-sorted.js","../modules/es.array.to-spliced":"node_modules/core-js/modules/es.array.to-spliced.js","../modules/es.array.unscopables.flat":"node_modules/core-js/modules/es.array.unscopables.flat.js","../modules/es.array.unscopables.flat-map":"node_modules/core-js/modules/es.array.unscopables.flat-map.js","../modules/es.array.unshift":"node_modules/core-js/modules/es.array.unshift.js","../modules/es.array.with":"node_modules/core-js/modules/es.array.with.js","../modules/es.array-buffer.constructor":"node_modules/core-js/modules/es.array-buffer.constructor.js","../modules/es.array-buffer.is-view":"node_modules/core-js/modules/es.array-buffer.is-view.js","../modules/es.array-buffer.slice":"node_modules/core-js/modules/es.array-buffer.slice.js","../modules/es.data-view":"node_modules/core-js/modules/es.data-view.js","../modules/es.array-buffer.detached":"node_modules/core-js/modules/es.array-buffer.detached.js","../modules/es.array-buffer.transfer":"node_modules/core-js/modules/es.array-buffer.transfer.js","../modules/es.array-buffer.transfer-to-fixed-length":"node_modules/core-js/modules/es.array-buffer.transfer-to-fixed-length.js","../modules/es.date.get-year":"node_modules/core-js/modules/es.date.get-year.js","../modules/es.date.now":"node_modules/core-js/modules/es.date.now.js","../modules/es.date.set-year":"node_modules/core-js/modules/es.date.set-year.js","../modules/es.date.to-gmt-string":"node_modules/core-js/modules/es.date.to-gmt-string.js","../modules/es.date.to-iso-string":"node_modules/core-js/modules/es.date.to-iso-string.js","../modules/es.date.to-json":"node_modules/core-js/modules/es.date.to-json.js","../modules/es.date.to-primitive":"node_modules/core-js/modules/es.date.to-primitive.js","../modules/es.date.to-string":"node_modules/core-js/modules/es.date.to-string.js","../modules/es.escape":"node_modules/core-js/modules/es.escape.js","../modules/es.function.bind":"node_modules/core-js/modules/es.function.bind.js","../modules/es.function.has-instance":"node_modules/core-js/modules/es.function.has-instance.js","../modules/es.function.name":"node_modules/core-js/modules/es.function.name.js","../modules/es.global-this":"node_modules/core-js/modules/es.global-this.js","../modules/es.json.stringify":"node_modules/core-js/modules/es.json.stringify.js","../modules/es.json.to-string-tag":"node_modules/core-js/modules/es.json.to-string-tag.js","../modules/es.map":"node_modules/core-js/modules/es.map.js","../modules/es.map.group-by":"node_modules/core-js/modules/es.map.group-by.js","../modules/es.math.acosh":"node_modules/core-js/modules/es.math.acosh.js","../modules/es.math.asinh":"node_modules/core-js/modules/es.math.asinh.js","../modules/es.math.atanh":"node_modules/core-js/modules/es.math.atanh.js","../modules/es.math.cbrt":"node_modules/core-js/modules/es.math.cbrt.js","../modules/es.math.clz32":"node_modules/core-js/modules/es.math.clz32.js","../modules/es.math.cosh":"node_modules/core-js/modules/es.math.cosh.js","../modules/es.math.expm1":"node_modules/core-js/modules/es.math.expm1.js","../modules/es.math.fround":"node_modules/core-js/modules/es.math.fround.js","../modules/es.math.hypot":"node_modules/core-js/modules/es.math.hypot.js","../modules/es.math.imul":"node_modules/core-js/modules/es.math.imul.js","../modules/es.math.log10":"node_modules/core-js/modules/es.math.log10.js","../modules/es.math.log1p":"node_modules/core-js/modules/es.math.log1p.js","../modules/es.math.log2":"node_modules/core-js/modules/es.math.log2.js","../modules/es.math.sign":"node_modules/core-js/modules/es.math.sign.js","../modules/es.math.sinh":"node_modules/core-js/modules/es.math.sinh.js","../modules/es.math.tanh":"node_modules/core-js/modules/es.math.tanh.js","../modules/es.math.to-string-tag":"node_modules/core-js/modules/es.math.to-string-tag.js","../modules/es.math.trunc":"node_modules/core-js/modules/es.math.trunc.js","../modules/es.number.constructor":"node_modules/core-js/modules/es.number.constructor.js","../modules/es.number.epsilon":"node_modules/core-js/modules/es.number.epsilon.js","../modules/es.number.is-finite":"node_modules/core-js/modules/es.number.is-finite.js","../modules/es.number.is-integer":"node_modules/core-js/modules/es.number.is-integer.js","../modules/es.number.is-nan":"node_modules/core-js/modules/es.number.is-nan.js","../modules/es.number.is-safe-integer":"node_modules/core-js/modules/es.number.is-safe-integer.js","../modules/es.number.max-safe-integer":"node_modules/core-js/modules/es.number.max-safe-integer.js","../modules/es.number.min-safe-integer":"node_modules/core-js/modules/es.number.min-safe-integer.js","../modules/es.number.parse-float":"node_modules/core-js/modules/es.number.parse-float.js","../modules/es.number.parse-int":"node_modules/core-js/modules/es.number.parse-int.js","../modules/es.number.to-exponential":"node_modules/core-js/modules/es.number.to-exponential.js","../modules/es.number.to-fixed":"node_modules/core-js/modules/es.number.to-fixed.js","../modules/es.number.to-precision":"node_modules/core-js/modules/es.number.to-precision.js","../modules/es.object.assign":"node_modules/core-js/modules/es.object.assign.js","../modules/es.object.create":"node_modules/core-js/modules/es.object.create.js","../modules/es.object.define-getter":"node_modules/core-js/modules/es.object.define-getter.js","../modules/es.object.define-properties":"node_modules/core-js/modules/es.object.define-properties.js","../modules/es.object.define-property":"node_modules/core-js/modules/es.object.define-property.js","../modules/es.object.define-setter":"node_modules/core-js/modules/es.object.define-setter.js","../modules/es.object.entries":"node_modules/core-js/modules/es.object.entries.js","../modules/es.object.freeze":"node_modules/core-js/modules/es.object.freeze.js","../modules/es.object.from-entries":"node_modules/core-js/modules/es.object.from-entries.js","../modules/es.object.get-own-property-descriptor":"node_modules/core-js/modules/es.object.get-own-property-descriptor.js","../modules/es.object.get-own-property-descriptors":"node_modules/core-js/modules/es.object.get-own-property-descriptors.js","../modules/es.object.get-own-property-names":"node_modules/core-js/modules/es.object.get-own-property-names.js","../modules/es.object.get-prototype-of":"node_modules/core-js/modules/es.object.get-prototype-of.js","../modules/es.object.group-by":"node_modules/core-js/modules/es.object.group-by.js","../modules/es.object.has-own":"node_modules/core-js/modules/es.object.has-own.js","../modules/es.object.is":"node_modules/core-js/modules/es.object.is.js","../modules/es.object.is-extensible":"node_modules/core-js/modules/es.object.is-extensible.js","../modules/es.object.is-frozen":"node_modules/core-js/modules/es.object.is-frozen.js","../modules/es.object.is-sealed":"node_modules/core-js/modules/es.object.is-sealed.js","../modules/es.object.keys":"node_modules/core-js/modules/es.object.keys.js","../modules/es.object.lookup-getter":"node_modules/core-js/modules/es.object.lookup-getter.js","../modules/es.object.lookup-setter":"node_modules/core-js/modules/es.object.lookup-setter.js","../modules/es.object.prevent-extensions":"node_modules/core-js/modules/es.object.prevent-extensions.js","../modules/es.object.proto":"node_modules/core-js/modules/es.object.proto.js","../modules/es.object.seal":"node_modules/core-js/modules/es.object.seal.js","../modules/es.object.set-prototype-of":"node_modules/core-js/modules/es.object.set-prototype-of.js","../modules/es.object.to-string":"node_modules/core-js/modules/es.object.to-string.js","../modules/es.object.values":"node_modules/core-js/modules/es.object.values.js","../modules/es.parse-float":"node_modules/core-js/modules/es.parse-float.js","../modules/es.parse-int":"node_modules/core-js/modules/es.parse-int.js","../modules/es.promise":"node_modules/core-js/modules/es.promise.js","../modules/es.promise.all-settled":"node_modules/core-js/modules/es.promise.all-settled.js","../modules/es.promise.any":"node_modules/core-js/modules/es.promise.any.js","../modules/es.promise.finally":"node_modules/core-js/modules/es.promise.finally.js","../modules/es.promise.with-resolvers":"node_modules/core-js/modules/es.promise.with-resolvers.js","../modules/es.reflect.apply":"node_modules/core-js/modules/es.reflect.apply.js","../modules/es.reflect.construct":"node_modules/core-js/modules/es.reflect.construct.js","../modules/es.reflect.define-property":"node_modules/core-js/modules/es.reflect.define-property.js","../modules/es.reflect.delete-property":"node_modules/core-js/modules/es.reflect.delete-property.js","../modules/es.reflect.get":"node_modules/core-js/modules/es.reflect.get.js","../modules/es.reflect.get-own-property-descriptor":"node_modules/core-js/modules/es.reflect.get-own-property-descriptor.js","../modules/es.reflect.get-prototype-of":"node_modules/core-js/modules/es.reflect.get-prototype-of.js","../modules/es.reflect.has":"node_modules/core-js/modules/es.reflect.has.js","../modules/es.reflect.is-extensible":"node_modules/core-js/modules/es.reflect.is-extensible.js","../modules/es.reflect.own-keys":"node_modules/core-js/modules/es.reflect.own-keys.js","../modules/es.reflect.prevent-extensions":"node_modules/core-js/modules/es.reflect.prevent-extensions.js","../modules/es.reflect.set":"node_modules/core-js/modules/es.reflect.set.js","../modules/es.reflect.set-prototype-of":"node_modules/core-js/modules/es.reflect.set-prototype-of.js","../modules/es.reflect.to-string-tag":"node_modules/core-js/modules/es.reflect.to-string-tag.js","../modules/es.regexp.constructor":"node_modules/core-js/modules/es.regexp.constructor.js","../modules/es.regexp.dot-all":"node_modules/core-js/modules/es.regexp.dot-all.js","../modules/es.regexp.exec":"node_modules/core-js/modules/es.regexp.exec.js","../modules/es.regexp.flags":"node_modules/core-js/modules/es.regexp.flags.js","../modules/es.regexp.sticky":"node_modules/core-js/modules/es.regexp.sticky.js","../modules/es.regexp.test":"node_modules/core-js/modules/es.regexp.test.js","../modules/es.regexp.to-string":"node_modules/core-js/modules/es.regexp.to-string.js","../modules/es.set":"node_modules/core-js/modules/es.set.js","../modules/es.string.at-alternative":"node_modules/core-js/modules/es.string.at-alternative.js","../modules/es.string.code-point-at":"node_modules/core-js/modules/es.string.code-point-at.js","../modules/es.string.ends-with":"node_modules/core-js/modules/es.string.ends-with.js","../modules/es.string.from-code-point":"node_modules/core-js/modules/es.string.from-code-point.js","../modules/es.string.includes":"node_modules/core-js/modules/es.string.includes.js","../modules/es.string.is-well-formed":"node_modules/core-js/modules/es.string.is-well-formed.js","../modules/es.string.iterator":"node_modules/core-js/modules/es.string.iterator.js","../modules/es.string.match":"node_modules/core-js/modules/es.string.match.js","../modules/es.string.match-all":"node_modules/core-js/modules/es.string.match-all.js","../modules/es.string.pad-end":"node_modules/core-js/modules/es.string.pad-end.js","../modules/es.string.pad-start":"node_modules/core-js/modules/es.string.pad-start.js","../modules/es.string.raw":"node_modules/core-js/modules/es.string.raw.js","../modules/es.string.repeat":"node_modules/core-js/modules/es.string.repeat.js","../modules/es.string.replace":"node_modules/core-js/modules/es.string.replace.js","../modules/es.string.replace-all":"node_modules/core-js/modules/es.string.replace-all.js","../modules/es.string.search":"node_modules/core-js/modules/es.string.search.js","../modules/es.string.split":"node_modules/core-js/modules/es.string.split.js","../modules/es.string.starts-with":"node_modules/core-js/modules/es.string.starts-with.js","../modules/es.string.substr":"node_modules/core-js/modules/es.string.substr.js","../modules/es.string.to-well-formed":"node_modules/core-js/modules/es.string.to-well-formed.js","../modules/es.string.trim":"node_modules/core-js/modules/es.string.trim.js","../modules/es.string.trim-end":"node_modules/core-js/modules/es.string.trim-end.js","../modules/es.string.trim-start":"node_modules/core-js/modules/es.string.trim-start.js","../modules/es.string.anchor":"node_modules/core-js/modules/es.string.anchor.js","../modules/es.string.big":"node_modules/core-js/modules/es.string.big.js","../modules/es.string.blink":"node_modules/core-js/modules/es.string.blink.js","../modules/es.string.bold":"node_modules/core-js/modules/es.string.bold.js","../modules/es.string.fixed":"node_modules/core-js/modules/es.string.fixed.js","../modules/es.string.fontcolor":"node_modules/core-js/modules/es.string.fontcolor.js","../modules/es.string.fontsize":"node_modules/core-js/modules/es.string.fontsize.js","../modules/es.string.italics":"node_modules/core-js/modules/es.string.italics.js","../modules/es.string.link":"node_modules/core-js/modules/es.string.link.js","../modules/es.string.small":"node_modules/core-js/modules/es.string.small.js","../modules/es.string.strike":"node_modules/core-js/modules/es.string.strike.js","../modules/es.string.sub":"node_modules/core-js/modules/es.string.sub.js","../modules/es.string.sup":"node_modules/core-js/modules/es.string.sup.js","../modules/es.typed-array.float32-array":"node_modules/core-js/modules/es.typed-array.float32-array.js","../modules/es.typed-array.float64-array":"node_modules/core-js/modules/es.typed-array.float64-array.js","../modules/es.typed-array.int8-array":"node_modules/core-js/modules/es.typed-array.int8-array.js","../modules/es.typed-array.int16-array":"node_modules/core-js/modules/es.typed-array.int16-array.js","../modules/es.typed-array.int32-array":"node_modules/core-js/modules/es.typed-array.int32-array.js","../modules/es.typed-array.uint8-array":"node_modules/core-js/modules/es.typed-array.uint8-array.js","../modules/es.typed-array.uint8-clamped-array":"node_modules/core-js/modules/es.typed-array.uint8-clamped-array.js","../modules/es.typed-array.uint16-array":"node_modules/core-js/modules/es.typed-array.uint16-array.js","../modules/es.typed-array.uint32-array":"node_modules/core-js/modules/es.typed-array.uint32-array.js","../modules/es.typed-array.at":"node_modules/core-js/modules/es.typed-array.at.js","../modules/es.typed-array.copy-within":"node_modules/core-js/modules/es.typed-array.copy-within.js","../modules/es.typed-array.every":"node_modules/core-js/modules/es.typed-array.every.js","../modules/es.typed-array.fill":"node_modules/core-js/modules/es.typed-array.fill.js","../modules/es.typed-array.filter":"node_modules/core-js/modules/es.typed-array.filter.js","../modules/es.typed-array.find":"node_modules/core-js/modules/es.typed-array.find.js","../modules/es.typed-array.find-index":"node_modules/core-js/modules/es.typed-array.find-index.js","../modules/es.typed-array.find-last":"node_modules/core-js/modules/es.typed-array.find-last.js","../modules/es.typed-array.find-last-index":"node_modules/core-js/modules/es.typed-array.find-last-index.js","../modules/es.typed-array.for-each":"node_modules/core-js/modules/es.typed-array.for-each.js","../modules/es.typed-array.from":"node_modules/core-js/modules/es.typed-array.from.js","../modules/es.typed-array.includes":"node_modules/core-js/modules/es.typed-array.includes.js","../modules/es.typed-array.index-of":"node_modules/core-js/modules/es.typed-array.index-of.js","../modules/es.typed-array.iterator":"node_modules/core-js/modules/es.typed-array.iterator.js","../modules/es.typed-array.join":"node_modules/core-js/modules/es.typed-array.join.js","../modules/es.typed-array.last-index-of":"node_modules/core-js/modules/es.typed-array.last-index-of.js","../modules/es.typed-array.map":"node_modules/core-js/modules/es.typed-array.map.js","../modules/es.typed-array.of":"node_modules/core-js/modules/es.typed-array.of.js","../modules/es.typed-array.reduce":"node_modules/core-js/modules/es.typed-array.reduce.js","../modules/es.typed-array.reduce-right":"node_modules/core-js/modules/es.typed-array.reduce-right.js","../modules/es.typed-array.reverse":"node_modules/core-js/modules/es.typed-array.reverse.js","../modules/es.typed-array.set":"node_modules/core-js/modules/es.typed-array.set.js","../modules/es.typed-array.slice":"node_modules/core-js/modules/es.typed-array.slice.js","../modules/es.typed-array.some":"node_modules/core-js/modules/es.typed-array.some.js","../modules/es.typed-array.sort":"node_modules/core-js/modules/es.typed-array.sort.js","../modules/es.typed-array.subarray":"node_modules/core-js/modules/es.typed-array.subarray.js","../modules/es.typed-array.to-locale-string":"node_modules/core-js/modules/es.typed-array.to-locale-string.js","../modules/es.typed-array.to-reversed":"node_modules/core-js/modules/es.typed-array.to-reversed.js","../modules/es.typed-array.to-sorted":"node_modules/core-js/modules/es.typed-array.to-sorted.js","../modules/es.typed-array.to-string":"node_modules/core-js/modules/es.typed-array.to-string.js","../modules/es.typed-array.with":"node_modules/core-js/modules/es.typed-array.with.js","../modules/es.unescape":"node_modules/core-js/modules/es.unescape.js","../modules/es.weak-map":"node_modules/core-js/modules/es.weak-map.js","../modules/es.weak-set":"node_modules/core-js/modules/es.weak-set.js","../modules/web.atob":"node_modules/core-js/modules/web.atob.js","../modules/web.btoa":"node_modules/core-js/modules/web.btoa.js","../modules/web.dom-collections.for-each":"node_modules/core-js/modules/web.dom-collections.for-each.js","../modules/web.dom-collections.iterator":"node_modules/core-js/modules/web.dom-collections.iterator.js","../modules/web.dom-exception.constructor":"node_modules/core-js/modules/web.dom-exception.constructor.js","../modules/web.dom-exception.stack":"node_modules/core-js/modules/web.dom-exception.stack.js","../modules/web.dom-exception.to-string-tag":"node_modules/core-js/modules/web.dom-exception.to-string-tag.js","../modules/web.immediate":"node_modules/core-js/modules/web.immediate.js","../modules/web.queue-microtask":"node_modules/core-js/modules/web.queue-microtask.js","../modules/web.self":"node_modules/core-js/modules/web.self.js","../modules/web.structured-clone":"node_modules/core-js/modules/web.structured-clone.js","../modules/web.timers":"node_modules/core-js/modules/web.timers.js","../modules/web.url":"node_modules/core-js/modules/web.url.js","../modules/web.url.can-parse":"node_modules/core-js/modules/web.url.can-parse.js","../modules/web.url.to-json":"node_modules/core-js/modules/web.url.to-json.js","../modules/web.url-search-params":"node_modules/core-js/modules/web.url-search-params.js","../modules/web.url-search-params.delete":"node_modules/core-js/modules/web.url-search-params.delete.js","../modules/web.url-search-params.has":"node_modules/core-js/modules/web.url-search-params.has.js","../modules/web.url-search-params.size":"node_modules/core-js/modules/web.url-search-params.size.js","../internals/path":"node_modules/core-js/internals/path.js"}],"node_modules/regenerator-runtime/runtime.js":[function(require,module,exports) {
-var define;
-/**
- * Copyright (c) 2014-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-var runtime = (function (exports) {
-  "use strict";
-
-  var Op = Object.prototype;
-  var hasOwn = Op.hasOwnProperty;
-  var defineProperty = Object.defineProperty || function (obj, key, desc) { obj[key] = desc.value; };
-  var undefined; // More compressible than void 0.
-  var $Symbol = typeof Symbol === "function" ? Symbol : {};
-  var iteratorSymbol = $Symbol.iterator || "@@iterator";
-  var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
-  var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
-
-  function define(obj, key, value) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-    return obj[key];
-  }
-  try {
-    // IE 8 has a broken Object.defineProperty that only works on DOM objects.
-    define({}, "");
-  } catch (err) {
-    define = function(obj, key, value) {
-      return obj[key] = value;
-    };
-  }
-
-  function wrap(innerFn, outerFn, self, tryLocsList) {
-    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
-    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
-    var generator = Object.create(protoGenerator.prototype);
-    var context = new Context(tryLocsList || []);
-
-    // The ._invoke method unifies the implementations of the .next,
-    // .throw, and .return methods.
-    defineProperty(generator, "_invoke", { value: makeInvokeMethod(innerFn, self, context) });
-
-    return generator;
-  }
-  exports.wrap = wrap;
-
-  // Try/catch helper to minimize deoptimizations. Returns a completion
-  // record like context.tryEntries[i].completion. This interface could
-  // have been (and was previously) designed to take a closure to be
-  // invoked without arguments, but in all the cases we care about we
-  // already have an existing method we want to call, so there's no need
-  // to create a new function object. We can even get away with assuming
-  // the method takes exactly one argument, since that happens to be true
-  // in every case, so we don't have to touch the arguments object. The
-  // only additional allocation required is the completion record, which
-  // has a stable shape and so hopefully should be cheap to allocate.
-  function tryCatch(fn, obj, arg) {
-    try {
-      return { type: "normal", arg: fn.call(obj, arg) };
-    } catch (err) {
-      return { type: "throw", arg: err };
-    }
-  }
-
-  var GenStateSuspendedStart = "suspendedStart";
-  var GenStateSuspendedYield = "suspendedYield";
-  var GenStateExecuting = "executing";
-  var GenStateCompleted = "completed";
-
-  // Returning this object from the innerFn has the same effect as
-  // breaking out of the dispatch switch statement.
-  var ContinueSentinel = {};
-
-  // Dummy constructor functions that we use as the .constructor and
-  // .constructor.prototype properties for functions that return Generator
-  // objects. For full spec compliance, you may wish to configure your
-  // minifier not to mangle the names of these two functions.
-  function Generator() {}
-  function GeneratorFunction() {}
-  function GeneratorFunctionPrototype() {}
-
-  // This is a polyfill for %IteratorPrototype% for environments that
-  // don't natively support it.
-  var IteratorPrototype = {};
-  define(IteratorPrototype, iteratorSymbol, function () {
-    return this;
-  });
-
-  var getProto = Object.getPrototypeOf;
-  var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
-  if (NativeIteratorPrototype &&
-      NativeIteratorPrototype !== Op &&
-      hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
-    // This environment has a native %IteratorPrototype%; use it instead
-    // of the polyfill.
-    IteratorPrototype = NativeIteratorPrototype;
-  }
-
-  var Gp = GeneratorFunctionPrototype.prototype =
-    Generator.prototype = Object.create(IteratorPrototype);
-  GeneratorFunction.prototype = GeneratorFunctionPrototype;
-  defineProperty(Gp, "constructor", { value: GeneratorFunctionPrototype, configurable: true });
-  defineProperty(
-    GeneratorFunctionPrototype,
-    "constructor",
-    { value: GeneratorFunction, configurable: true }
-  );
-  GeneratorFunction.displayName = define(
-    GeneratorFunctionPrototype,
-    toStringTagSymbol,
-    "GeneratorFunction"
-  );
-
-  // Helper for defining the .next, .throw, and .return methods of the
-  // Iterator interface in terms of a single ._invoke method.
-  function defineIteratorMethods(prototype) {
-    ["next", "throw", "return"].forEach(function(method) {
-      define(prototype, method, function(arg) {
-        return this._invoke(method, arg);
-      });
-    });
-  }
-
-  exports.isGeneratorFunction = function(genFun) {
-    var ctor = typeof genFun === "function" && genFun.constructor;
-    return ctor
-      ? ctor === GeneratorFunction ||
-        // For the native GeneratorFunction constructor, the best we can
-        // do is to check its .name property.
-        (ctor.displayName || ctor.name) === "GeneratorFunction"
-      : false;
-  };
-
-  exports.mark = function(genFun) {
-    if (Object.setPrototypeOf) {
-      Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
-    } else {
-      genFun.__proto__ = GeneratorFunctionPrototype;
-      define(genFun, toStringTagSymbol, "GeneratorFunction");
-    }
-    genFun.prototype = Object.create(Gp);
-    return genFun;
-  };
-
-  // Within the body of any async function, `await x` is transformed to
-  // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
-  // `hasOwn.call(value, "__await")` to determine if the yielded value is
-  // meant to be awaited.
-  exports.awrap = function(arg) {
-    return { __await: arg };
-  };
-
-  function AsyncIterator(generator, PromiseImpl) {
-    function invoke(method, arg, resolve, reject) {
-      var record = tryCatch(generator[method], generator, arg);
-      if (record.type === "throw") {
-        reject(record.arg);
-      } else {
-        var result = record.arg;
-        var value = result.value;
-        if (value &&
-            typeof value === "object" &&
-            hasOwn.call(value, "__await")) {
-          return PromiseImpl.resolve(value.__await).then(function(value) {
-            invoke("next", value, resolve, reject);
-          }, function(err) {
-            invoke("throw", err, resolve, reject);
-          });
-        }
-
-        return PromiseImpl.resolve(value).then(function(unwrapped) {
-          // When a yielded Promise is resolved, its final value becomes
-          // the .value of the Promise<{value,done}> result for the
-          // current iteration.
-          result.value = unwrapped;
-          resolve(result);
-        }, function(error) {
-          // If a rejected Promise was yielded, throw the rejection back
-          // into the async generator function so it can be handled there.
-          return invoke("throw", error, resolve, reject);
-        });
-      }
-    }
-
-    var previousPromise;
-
-    function enqueue(method, arg) {
-      function callInvokeWithMethodAndArg() {
-        return new PromiseImpl(function(resolve, reject) {
-          invoke(method, arg, resolve, reject);
-        });
-      }
-
-      return previousPromise =
-        // If enqueue has been called before, then we want to wait until
-        // all previous Promises have been resolved before calling invoke,
-        // so that results are always delivered in the correct order. If
-        // enqueue has not been called before, then it is important to
-        // call invoke immediately, without waiting on a callback to fire,
-        // so that the async generator function has the opportunity to do
-        // any necessary setup in a predictable way. This predictability
-        // is why the Promise constructor synchronously invokes its
-        // executor callback, and why async functions synchronously
-        // execute code before the first await. Since we implement simple
-        // async functions in terms of async generators, it is especially
-        // important to get this right, even though it requires care.
-        previousPromise ? previousPromise.then(
-          callInvokeWithMethodAndArg,
-          // Avoid propagating failures to Promises returned by later
-          // invocations of the iterator.
-          callInvokeWithMethodAndArg
-        ) : callInvokeWithMethodAndArg();
-    }
-
-    // Define the unified helper method that is used to implement .next,
-    // .throw, and .return (see defineIteratorMethods).
-    defineProperty(this, "_invoke", { value: enqueue });
-  }
-
-  defineIteratorMethods(AsyncIterator.prototype);
-  define(AsyncIterator.prototype, asyncIteratorSymbol, function () {
-    return this;
-  });
-  exports.AsyncIterator = AsyncIterator;
-
-  // Note that simple async functions are implemented on top of
-  // AsyncIterator objects; they just return a Promise for the value of
-  // the final result produced by the iterator.
-  exports.async = function(innerFn, outerFn, self, tryLocsList, PromiseImpl) {
-    if (PromiseImpl === void 0) PromiseImpl = Promise;
-
-    var iter = new AsyncIterator(
-      wrap(innerFn, outerFn, self, tryLocsList),
-      PromiseImpl
-    );
-
-    return exports.isGeneratorFunction(outerFn)
-      ? iter // If outerFn is a generator, return the full iterator.
-      : iter.next().then(function(result) {
-          return result.done ? result.value : iter.next();
-        });
-  };
-
-  function makeInvokeMethod(innerFn, self, context) {
-    var state = GenStateSuspendedStart;
-
-    return function invoke(method, arg) {
-      if (state === GenStateExecuting) {
-        throw new Error("Generator is already running");
-      }
-
-      if (state === GenStateCompleted) {
-        if (method === "throw") {
-          throw arg;
-        }
-
-        // Be forgiving, per GeneratorResume behavior specified since ES2015:
-        // ES2015 spec, step 3: https://262.ecma-international.org/6.0/#sec-generatorresume
-        // Latest spec, step 2: https://tc39.es/ecma262/#sec-generatorresume
-        return doneResult();
-      }
-
-      context.method = method;
-      context.arg = arg;
-
-      while (true) {
-        var delegate = context.delegate;
-        if (delegate) {
-          var delegateResult = maybeInvokeDelegate(delegate, context);
-          if (delegateResult) {
-            if (delegateResult === ContinueSentinel) continue;
-            return delegateResult;
-          }
-        }
-
-        if (context.method === "next") {
-          // Setting context._sent for legacy support of Babel's
-          // function.sent implementation.
-          context.sent = context._sent = context.arg;
-
-        } else if (context.method === "throw") {
-          if (state === GenStateSuspendedStart) {
-            state = GenStateCompleted;
-            throw context.arg;
-          }
-
-          context.dispatchException(context.arg);
-
-        } else if (context.method === "return") {
-          context.abrupt("return", context.arg);
-        }
-
-        state = GenStateExecuting;
-
-        var record = tryCatch(innerFn, self, context);
-        if (record.type === "normal") {
-          // If an exception is thrown from innerFn, we leave state ===
-          // GenStateExecuting and loop back for another invocation.
-          state = context.done
-            ? GenStateCompleted
-            : GenStateSuspendedYield;
-
-          if (record.arg === ContinueSentinel) {
-            continue;
-          }
-
-          return {
-            value: record.arg,
-            done: context.done
-          };
-
-        } else if (record.type === "throw") {
-          state = GenStateCompleted;
-          // Dispatch the exception by looping back around to the
-          // context.dispatchException(context.arg) call above.
-          context.method = "throw";
-          context.arg = record.arg;
-        }
-      }
-    };
-  }
-
-  // Call delegate.iterator[context.method](context.arg) and handle the
-  // result, either by returning a { value, done } result from the
-  // delegate iterator, or by modifying context.method and context.arg,
-  // setting context.delegate to null, and returning the ContinueSentinel.
-  function maybeInvokeDelegate(delegate, context) {
-    var methodName = context.method;
-    var method = delegate.iterator[methodName];
-    if (method === undefined) {
-      // A .throw or .return when the delegate iterator has no .throw
-      // method, or a missing .next method, always terminate the
-      // yield* loop.
-      context.delegate = null;
-
-      // Note: ["return"] must be used for ES3 parsing compatibility.
-      if (methodName === "throw" && delegate.iterator["return"]) {
-        // If the delegate iterator has a return method, give it a
-        // chance to clean up.
-        context.method = "return";
-        context.arg = undefined;
-        maybeInvokeDelegate(delegate, context);
-
-        if (context.method === "throw") {
-          // If maybeInvokeDelegate(context) changed context.method from
-          // "return" to "throw", let that override the TypeError below.
-          return ContinueSentinel;
-        }
-      }
-      if (methodName !== "return") {
-        context.method = "throw";
-        context.arg = new TypeError(
-          "The iterator does not provide a '" + methodName + "' method");
-      }
-
-      return ContinueSentinel;
-    }
-
-    var record = tryCatch(method, delegate.iterator, context.arg);
-
-    if (record.type === "throw") {
-      context.method = "throw";
-      context.arg = record.arg;
-      context.delegate = null;
-      return ContinueSentinel;
-    }
-
-    var info = record.arg;
-
-    if (! info) {
-      context.method = "throw";
-      context.arg = new TypeError("iterator result is not an object");
-      context.delegate = null;
-      return ContinueSentinel;
-    }
-
-    if (info.done) {
-      // Assign the result of the finished delegate to the temporary
-      // variable specified by delegate.resultName (see delegateYield).
-      context[delegate.resultName] = info.value;
-
-      // Resume execution at the desired location (see delegateYield).
-      context.next = delegate.nextLoc;
-
-      // If context.method was "throw" but the delegate handled the
-      // exception, let the outer generator proceed normally. If
-      // context.method was "next", forget context.arg since it has been
-      // "consumed" by the delegate iterator. If context.method was
-      // "return", allow the original .return call to continue in the
-      // outer generator.
-      if (context.method !== "return") {
-        context.method = "next";
-        context.arg = undefined;
-      }
-
-    } else {
-      // Re-yield the result returned by the delegate method.
-      return info;
-    }
-
-    // The delegate iterator is finished, so forget it and continue with
-    // the outer generator.
-    context.delegate = null;
-    return ContinueSentinel;
-  }
-
-  // Define Generator.prototype.{next,throw,return} in terms of the
-  // unified ._invoke helper method.
-  defineIteratorMethods(Gp);
-
-  define(Gp, toStringTagSymbol, "Generator");
-
-  // A Generator should always return itself as the iterator object when the
-  // @@iterator function is called on it. Some browsers' implementations of the
-  // iterator prototype chain incorrectly implement this, causing the Generator
-  // object to not be returned from this call. This ensures that doesn't happen.
-  // See https://github.com/facebook/regenerator/issues/274 for more details.
-  define(Gp, iteratorSymbol, function() {
-    return this;
-  });
-
-  define(Gp, "toString", function() {
-    return "[object Generator]";
-  });
-
-  function pushTryEntry(locs) {
-    var entry = { tryLoc: locs[0] };
-
-    if (1 in locs) {
-      entry.catchLoc = locs[1];
-    }
-
-    if (2 in locs) {
-      entry.finallyLoc = locs[2];
-      entry.afterLoc = locs[3];
-    }
-
-    this.tryEntries.push(entry);
-  }
-
-  function resetTryEntry(entry) {
-    var record = entry.completion || {};
-    record.type = "normal";
-    delete record.arg;
-    entry.completion = record;
-  }
-
-  function Context(tryLocsList) {
-    // The root entry object (effectively a try statement without a catch
-    // or a finally block) gives us a place to store values thrown from
-    // locations where there is no enclosing try statement.
-    this.tryEntries = [{ tryLoc: "root" }];
-    tryLocsList.forEach(pushTryEntry, this);
-    this.reset(true);
-  }
-
-  exports.keys = function(val) {
-    var object = Object(val);
-    var keys = [];
-    for (var key in object) {
-      keys.push(key);
-    }
-    keys.reverse();
-
-    // Rather than returning an object with a next method, we keep
-    // things simple and return the next function itself.
-    return function next() {
-      while (keys.length) {
-        var key = keys.pop();
-        if (key in object) {
-          next.value = key;
-          next.done = false;
-          return next;
-        }
-      }
-
-      // To avoid creating an additional object, we just hang the .value
-      // and .done properties off the next function object itself. This
-      // also ensures that the minifier will not anonymize the function.
-      next.done = true;
-      return next;
-    };
-  };
-
-  function values(iterable) {
-    if (iterable != null) {
-      var iteratorMethod = iterable[iteratorSymbol];
-      if (iteratorMethod) {
-        return iteratorMethod.call(iterable);
-      }
-
-      if (typeof iterable.next === "function") {
-        return iterable;
-      }
-
-      if (!isNaN(iterable.length)) {
-        var i = -1, next = function next() {
-          while (++i < iterable.length) {
-            if (hasOwn.call(iterable, i)) {
-              next.value = iterable[i];
-              next.done = false;
-              return next;
-            }
-          }
-
-          next.value = undefined;
-          next.done = true;
-
-          return next;
-        };
-
-        return next.next = next;
-      }
-    }
-
-    throw new TypeError(typeof iterable + " is not iterable");
-  }
-  exports.values = values;
-
-  function doneResult() {
-    return { value: undefined, done: true };
-  }
-
-  Context.prototype = {
-    constructor: Context,
-
-    reset: function(skipTempReset) {
-      this.prev = 0;
-      this.next = 0;
-      // Resetting context._sent for legacy support of Babel's
-      // function.sent implementation.
-      this.sent = this._sent = undefined;
-      this.done = false;
-      this.delegate = null;
-
-      this.method = "next";
-      this.arg = undefined;
-
-      this.tryEntries.forEach(resetTryEntry);
-
-      if (!skipTempReset) {
-        for (var name in this) {
-          // Not sure about the optimal order of these conditions:
-          if (name.charAt(0) === "t" &&
-              hasOwn.call(this, name) &&
-              !isNaN(+name.slice(1))) {
-            this[name] = undefined;
-          }
-        }
-      }
-    },
-
-    stop: function() {
-      this.done = true;
-
-      var rootEntry = this.tryEntries[0];
-      var rootRecord = rootEntry.completion;
-      if (rootRecord.type === "throw") {
-        throw rootRecord.arg;
-      }
-
-      return this.rval;
-    },
-
-    dispatchException: function(exception) {
-      if (this.done) {
-        throw exception;
-      }
-
-      var context = this;
-      function handle(loc, caught) {
-        record.type = "throw";
-        record.arg = exception;
-        context.next = loc;
-
-        if (caught) {
-          // If the dispatched exception was caught by a catch block,
-          // then let that catch block handle the exception normally.
-          context.method = "next";
-          context.arg = undefined;
-        }
-
-        return !! caught;
-      }
-
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        var record = entry.completion;
-
-        if (entry.tryLoc === "root") {
-          // Exception thrown outside of any try block that could handle
-          // it, so set the completion value of the entire function to
-          // throw the exception.
-          return handle("end");
-        }
-
-        if (entry.tryLoc <= this.prev) {
-          var hasCatch = hasOwn.call(entry, "catchLoc");
-          var hasFinally = hasOwn.call(entry, "finallyLoc");
-
-          if (hasCatch && hasFinally) {
-            if (this.prev < entry.catchLoc) {
-              return handle(entry.catchLoc, true);
-            } else if (this.prev < entry.finallyLoc) {
-              return handle(entry.finallyLoc);
-            }
-
-          } else if (hasCatch) {
-            if (this.prev < entry.catchLoc) {
-              return handle(entry.catchLoc, true);
-            }
-
-          } else if (hasFinally) {
-            if (this.prev < entry.finallyLoc) {
-              return handle(entry.finallyLoc);
-            }
-
-          } else {
-            throw new Error("try statement without catch or finally");
-          }
-        }
-      }
-    },
-
-    abrupt: function(type, arg) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.tryLoc <= this.prev &&
-            hasOwn.call(entry, "finallyLoc") &&
-            this.prev < entry.finallyLoc) {
-          var finallyEntry = entry;
-          break;
-        }
-      }
-
-      if (finallyEntry &&
-          (type === "break" ||
-           type === "continue") &&
-          finallyEntry.tryLoc <= arg &&
-          arg <= finallyEntry.finallyLoc) {
-        // Ignore the finally entry if control is not jumping to a
-        // location outside the try/catch block.
-        finallyEntry = null;
-      }
-
-      var record = finallyEntry ? finallyEntry.completion : {};
-      record.type = type;
-      record.arg = arg;
-
-      if (finallyEntry) {
-        this.method = "next";
-        this.next = finallyEntry.finallyLoc;
-        return ContinueSentinel;
-      }
-
-      return this.complete(record);
-    },
-
-    complete: function(record, afterLoc) {
-      if (record.type === "throw") {
-        throw record.arg;
-      }
-
-      if (record.type === "break" ||
-          record.type === "continue") {
-        this.next = record.arg;
-      } else if (record.type === "return") {
-        this.rval = this.arg = record.arg;
-        this.method = "return";
-        this.next = "end";
-      } else if (record.type === "normal" && afterLoc) {
-        this.next = afterLoc;
-      }
-
-      return ContinueSentinel;
-    },
-
-    finish: function(finallyLoc) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.finallyLoc === finallyLoc) {
-          this.complete(entry.completion, entry.afterLoc);
-          resetTryEntry(entry);
-          return ContinueSentinel;
-        }
-      }
-    },
-
-    "catch": function(tryLoc) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.tryLoc === tryLoc) {
-          var record = entry.completion;
-          if (record.type === "throw") {
-            var thrown = record.arg;
-            resetTryEntry(entry);
-          }
-          return thrown;
-        }
-      }
-
-      // The context.catch method must only be called with a location
-      // argument that corresponds to a known catch block.
-      throw new Error("illegal catch attempt");
-    },
-
-    delegateYield: function(iterable, resultName, nextLoc) {
-      this.delegate = {
-        iterator: values(iterable),
-        resultName: resultName,
-        nextLoc: nextLoc
-      };
-
-      if (this.method === "next") {
-        // Deliberately forget the last sent value so that we don't
-        // accidentally pass it on to the delegate.
-        this.arg = undefined;
-      }
-
-      return ContinueSentinel;
-    }
-  };
-
-  // Regardless of whether this script is executing as a CommonJS module
-  // or not, return the runtime object so that we can declare the variable
-  // regeneratorRuntime in the outer scope, which allows this module to be
-  // injected easily by `bin/regenerator --include-runtime script.js`.
-  return exports;
-
-}(
-  // If this script is executing as a CommonJS module, use module.exports
-  // as the regeneratorRuntime namespace. Otherwise create a new empty
-  // object. Either way, the resulting object will be used to initialize
-  // the regeneratorRuntime variable at the top of this file.
-  typeof module === "object" ? module.exports : {}
-));
-
-try {
-  regeneratorRuntime = runtime;
-} catch (accidentalStrictMode) {
-  // This module should not be running in strict mode, so the above
-  // assignment should always work unless something is misconfigured. Just
-  // in case runtime.js accidentally runs in strict mode, in modern engines
-  // we can explicitly access globalThis. In older engines we can escape
-  // strict mode using a global Function call. This could conceivably fail
-  // if a Content Security Policy forbids using Function, but in that case
-  // the proper solution is to fix the accidental strict mode problem. If
-  // you've misconfigured your bundler to force strict mode and applied a
-  // CSP to forbid Function, and you're not willing to fix either of those
-  // problems, please detail your unique predicament in a GitHub issue.
-  if (typeof globalThis === "object") {
-    globalThis.regeneratorRuntime = runtime;
-  } else {
-    Function("r", "regeneratorRuntime = r")(runtime);
-  }
-}
-
-},{}],"src/js/controller.js":[function(require,module,exports) {
+},{"../modules/es.symbol":"node_modules/core-js/modules/es.symbol.js","../modules/es.symbol.description":"node_modules/core-js/modules/es.symbol.description.js","../modules/es.symbol.async-iterator":"node_modules/core-js/modules/es.symbol.async-iterator.js","../modules/es.symbol.has-instance":"node_modules/core-js/modules/es.symbol.has-instance.js","../modules/es.symbol.is-concat-spreadable":"node_modules/core-js/modules/es.symbol.is-concat-spreadable.js","../modules/es.symbol.iterator":"node_modules/core-js/modules/es.symbol.iterator.js","../modules/es.symbol.match":"node_modules/core-js/modules/es.symbol.match.js","../modules/es.symbol.match-all":"node_modules/core-js/modules/es.symbol.match-all.js","../modules/es.symbol.replace":"node_modules/core-js/modules/es.symbol.replace.js","../modules/es.symbol.search":"node_modules/core-js/modules/es.symbol.search.js","../modules/es.symbol.species":"node_modules/core-js/modules/es.symbol.species.js","../modules/es.symbol.split":"node_modules/core-js/modules/es.symbol.split.js","../modules/es.symbol.to-primitive":"node_modules/core-js/modules/es.symbol.to-primitive.js","../modules/es.symbol.to-string-tag":"node_modules/core-js/modules/es.symbol.to-string-tag.js","../modules/es.symbol.unscopables":"node_modules/core-js/modules/es.symbol.unscopables.js","../modules/es.error.cause":"node_modules/core-js/modules/es.error.cause.js","../modules/es.error.to-string":"node_modules/core-js/modules/es.error.to-string.js","../modules/es.aggregate-error":"node_modules/core-js/modules/es.aggregate-error.js","../modules/es.aggregate-error.cause":"node_modules/core-js/modules/es.aggregate-error.cause.js","../modules/es.array.at":"node_modules/core-js/modules/es.array.at.js","../modules/es.array.concat":"node_modules/core-js/modules/es.array.concat.js","../modules/es.array.copy-within":"node_modules/core-js/modules/es.array.copy-within.js","../modules/es.array.every":"node_modules/core-js/modules/es.array.every.js","../modules/es.array.fill":"node_modules/core-js/modules/es.array.fill.js","../modules/es.array.filter":"node_modules/core-js/modules/es.array.filter.js","../modules/es.array.find":"node_modules/core-js/modules/es.array.find.js","../modules/es.array.find-index":"node_modules/core-js/modules/es.array.find-index.js","../modules/es.array.find-last":"node_modules/core-js/modules/es.array.find-last.js","../modules/es.array.find-last-index":"node_modules/core-js/modules/es.array.find-last-index.js","../modules/es.array.flat":"node_modules/core-js/modules/es.array.flat.js","../modules/es.array.flat-map":"node_modules/core-js/modules/es.array.flat-map.js","../modules/es.array.for-each":"node_modules/core-js/modules/es.array.for-each.js","../modules/es.array.from":"node_modules/core-js/modules/es.array.from.js","../modules/es.array.includes":"node_modules/core-js/modules/es.array.includes.js","../modules/es.array.index-of":"node_modules/core-js/modules/es.array.index-of.js","../modules/es.array.is-array":"node_modules/core-js/modules/es.array.is-array.js","../modules/es.array.iterator":"node_modules/core-js/modules/es.array.iterator.js","../modules/es.array.join":"node_modules/core-js/modules/es.array.join.js","../modules/es.array.last-index-of":"node_modules/core-js/modules/es.array.last-index-of.js","../modules/es.array.map":"node_modules/core-js/modules/es.array.map.js","../modules/es.array.of":"node_modules/core-js/modules/es.array.of.js","../modules/es.array.push":"node_modules/core-js/modules/es.array.push.js","../modules/es.array.reduce":"node_modules/core-js/modules/es.array.reduce.js","../modules/es.array.reduce-right":"node_modules/core-js/modules/es.array.reduce-right.js","../modules/es.array.reverse":"node_modules/core-js/modules/es.array.reverse.js","../modules/es.array.slice":"node_modules/core-js/modules/es.array.slice.js","../modules/es.array.some":"node_modules/core-js/modules/es.array.some.js","../modules/es.array.sort":"node_modules/core-js/modules/es.array.sort.js","../modules/es.array.species":"node_modules/core-js/modules/es.array.species.js","../modules/es.array.splice":"node_modules/core-js/modules/es.array.splice.js","../modules/es.array.to-reversed":"node_modules/core-js/modules/es.array.to-reversed.js","../modules/es.array.to-sorted":"node_modules/core-js/modules/es.array.to-sorted.js","../modules/es.array.to-spliced":"node_modules/core-js/modules/es.array.to-spliced.js","../modules/es.array.unscopables.flat":"node_modules/core-js/modules/es.array.unscopables.flat.js","../modules/es.array.unscopables.flat-map":"node_modules/core-js/modules/es.array.unscopables.flat-map.js","../modules/es.array.unshift":"node_modules/core-js/modules/es.array.unshift.js","../modules/es.array.with":"node_modules/core-js/modules/es.array.with.js","../modules/es.array-buffer.constructor":"node_modules/core-js/modules/es.array-buffer.constructor.js","../modules/es.array-buffer.is-view":"node_modules/core-js/modules/es.array-buffer.is-view.js","../modules/es.array-buffer.slice":"node_modules/core-js/modules/es.array-buffer.slice.js","../modules/es.data-view":"node_modules/core-js/modules/es.data-view.js","../modules/es.array-buffer.detached":"node_modules/core-js/modules/es.array-buffer.detached.js","../modules/es.array-buffer.transfer":"node_modules/core-js/modules/es.array-buffer.transfer.js","../modules/es.array-buffer.transfer-to-fixed-length":"node_modules/core-js/modules/es.array-buffer.transfer-to-fixed-length.js","../modules/es.date.get-year":"node_modules/core-js/modules/es.date.get-year.js","../modules/es.date.now":"node_modules/core-js/modules/es.date.now.js","../modules/es.date.set-year":"node_modules/core-js/modules/es.date.set-year.js","../modules/es.date.to-gmt-string":"node_modules/core-js/modules/es.date.to-gmt-string.js","../modules/es.date.to-iso-string":"node_modules/core-js/modules/es.date.to-iso-string.js","../modules/es.date.to-json":"node_modules/core-js/modules/es.date.to-json.js","../modules/es.date.to-primitive":"node_modules/core-js/modules/es.date.to-primitive.js","../modules/es.date.to-string":"node_modules/core-js/modules/es.date.to-string.js","../modules/es.escape":"node_modules/core-js/modules/es.escape.js","../modules/es.function.bind":"node_modules/core-js/modules/es.function.bind.js","../modules/es.function.has-instance":"node_modules/core-js/modules/es.function.has-instance.js","../modules/es.function.name":"node_modules/core-js/modules/es.function.name.js","../modules/es.global-this":"node_modules/core-js/modules/es.global-this.js","../modules/es.json.stringify":"node_modules/core-js/modules/es.json.stringify.js","../modules/es.json.to-string-tag":"node_modules/core-js/modules/es.json.to-string-tag.js","../modules/es.map":"node_modules/core-js/modules/es.map.js","../modules/es.map.group-by":"node_modules/core-js/modules/es.map.group-by.js","../modules/es.math.acosh":"node_modules/core-js/modules/es.math.acosh.js","../modules/es.math.asinh":"node_modules/core-js/modules/es.math.asinh.js","../modules/es.math.atanh":"node_modules/core-js/modules/es.math.atanh.js","../modules/es.math.cbrt":"node_modules/core-js/modules/es.math.cbrt.js","../modules/es.math.clz32":"node_modules/core-js/modules/es.math.clz32.js","../modules/es.math.cosh":"node_modules/core-js/modules/es.math.cosh.js","../modules/es.math.expm1":"node_modules/core-js/modules/es.math.expm1.js","../modules/es.math.fround":"node_modules/core-js/modules/es.math.fround.js","../modules/es.math.hypot":"node_modules/core-js/modules/es.math.hypot.js","../modules/es.math.imul":"node_modules/core-js/modules/es.math.imul.js","../modules/es.math.log10":"node_modules/core-js/modules/es.math.log10.js","../modules/es.math.log1p":"node_modules/core-js/modules/es.math.log1p.js","../modules/es.math.log2":"node_modules/core-js/modules/es.math.log2.js","../modules/es.math.sign":"node_modules/core-js/modules/es.math.sign.js","../modules/es.math.sinh":"node_modules/core-js/modules/es.math.sinh.js","../modules/es.math.tanh":"node_modules/core-js/modules/es.math.tanh.js","../modules/es.math.to-string-tag":"node_modules/core-js/modules/es.math.to-string-tag.js","../modules/es.math.trunc":"node_modules/core-js/modules/es.math.trunc.js","../modules/es.number.constructor":"node_modules/core-js/modules/es.number.constructor.js","../modules/es.number.epsilon":"node_modules/core-js/modules/es.number.epsilon.js","../modules/es.number.is-finite":"node_modules/core-js/modules/es.number.is-finite.js","../modules/es.number.is-integer":"node_modules/core-js/modules/es.number.is-integer.js","../modules/es.number.is-nan":"node_modules/core-js/modules/es.number.is-nan.js","../modules/es.number.is-safe-integer":"node_modules/core-js/modules/es.number.is-safe-integer.js","../modules/es.number.max-safe-integer":"node_modules/core-js/modules/es.number.max-safe-integer.js","../modules/es.number.min-safe-integer":"node_modules/core-js/modules/es.number.min-safe-integer.js","../modules/es.number.parse-float":"node_modules/core-js/modules/es.number.parse-float.js","../modules/es.number.parse-int":"node_modules/core-js/modules/es.number.parse-int.js","../modules/es.number.to-exponential":"node_modules/core-js/modules/es.number.to-exponential.js","../modules/es.number.to-fixed":"node_modules/core-js/modules/es.number.to-fixed.js","../modules/es.number.to-precision":"node_modules/core-js/modules/es.number.to-precision.js","../modules/es.object.assign":"node_modules/core-js/modules/es.object.assign.js","../modules/es.object.create":"node_modules/core-js/modules/es.object.create.js","../modules/es.object.define-getter":"node_modules/core-js/modules/es.object.define-getter.js","../modules/es.object.define-properties":"node_modules/core-js/modules/es.object.define-properties.js","../modules/es.object.define-property":"node_modules/core-js/modules/es.object.define-property.js","../modules/es.object.define-setter":"node_modules/core-js/modules/es.object.define-setter.js","../modules/es.object.entries":"node_modules/core-js/modules/es.object.entries.js","../modules/es.object.freeze":"node_modules/core-js/modules/es.object.freeze.js","../modules/es.object.from-entries":"node_modules/core-js/modules/es.object.from-entries.js","../modules/es.object.get-own-property-descriptor":"node_modules/core-js/modules/es.object.get-own-property-descriptor.js","../modules/es.object.get-own-property-descriptors":"node_modules/core-js/modules/es.object.get-own-property-descriptors.js","../modules/es.object.get-own-property-names":"node_modules/core-js/modules/es.object.get-own-property-names.js","../modules/es.object.get-prototype-of":"node_modules/core-js/modules/es.object.get-prototype-of.js","../modules/es.object.group-by":"node_modules/core-js/modules/es.object.group-by.js","../modules/es.object.has-own":"node_modules/core-js/modules/es.object.has-own.js","../modules/es.object.is":"node_modules/core-js/modules/es.object.is.js","../modules/es.object.is-extensible":"node_modules/core-js/modules/es.object.is-extensible.js","../modules/es.object.is-frozen":"node_modules/core-js/modules/es.object.is-frozen.js","../modules/es.object.is-sealed":"node_modules/core-js/modules/es.object.is-sealed.js","../modules/es.object.keys":"node_modules/core-js/modules/es.object.keys.js","../modules/es.object.lookup-getter":"node_modules/core-js/modules/es.object.lookup-getter.js","../modules/es.object.lookup-setter":"node_modules/core-js/modules/es.object.lookup-setter.js","../modules/es.object.prevent-extensions":"node_modules/core-js/modules/es.object.prevent-extensions.js","../modules/es.object.proto":"node_modules/core-js/modules/es.object.proto.js","../modules/es.object.seal":"node_modules/core-js/modules/es.object.seal.js","../modules/es.object.set-prototype-of":"node_modules/core-js/modules/es.object.set-prototype-of.js","../modules/es.object.to-string":"node_modules/core-js/modules/es.object.to-string.js","../modules/es.object.values":"node_modules/core-js/modules/es.object.values.js","../modules/es.parse-float":"node_modules/core-js/modules/es.parse-float.js","../modules/es.parse-int":"node_modules/core-js/modules/es.parse-int.js","../modules/es.promise":"node_modules/core-js/modules/es.promise.js","../modules/es.promise.all-settled":"node_modules/core-js/modules/es.promise.all-settled.js","../modules/es.promise.any":"node_modules/core-js/modules/es.promise.any.js","../modules/es.promise.finally":"node_modules/core-js/modules/es.promise.finally.js","../modules/es.promise.with-resolvers":"node_modules/core-js/modules/es.promise.with-resolvers.js","../modules/es.reflect.apply":"node_modules/core-js/modules/es.reflect.apply.js","../modules/es.reflect.construct":"node_modules/core-js/modules/es.reflect.construct.js","../modules/es.reflect.define-property":"node_modules/core-js/modules/es.reflect.define-property.js","../modules/es.reflect.delete-property":"node_modules/core-js/modules/es.reflect.delete-property.js","../modules/es.reflect.get":"node_modules/core-js/modules/es.reflect.get.js","../modules/es.reflect.get-own-property-descriptor":"node_modules/core-js/modules/es.reflect.get-own-property-descriptor.js","../modules/es.reflect.get-prototype-of":"node_modules/core-js/modules/es.reflect.get-prototype-of.js","../modules/es.reflect.has":"node_modules/core-js/modules/es.reflect.has.js","../modules/es.reflect.is-extensible":"node_modules/core-js/modules/es.reflect.is-extensible.js","../modules/es.reflect.own-keys":"node_modules/core-js/modules/es.reflect.own-keys.js","../modules/es.reflect.prevent-extensions":"node_modules/core-js/modules/es.reflect.prevent-extensions.js","../modules/es.reflect.set":"node_modules/core-js/modules/es.reflect.set.js","../modules/es.reflect.set-prototype-of":"node_modules/core-js/modules/es.reflect.set-prototype-of.js","../modules/es.reflect.to-string-tag":"node_modules/core-js/modules/es.reflect.to-string-tag.js","../modules/es.regexp.constructor":"node_modules/core-js/modules/es.regexp.constructor.js","../modules/es.regexp.dot-all":"node_modules/core-js/modules/es.regexp.dot-all.js","../modules/es.regexp.exec":"node_modules/core-js/modules/es.regexp.exec.js","../modules/es.regexp.flags":"node_modules/core-js/modules/es.regexp.flags.js","../modules/es.regexp.sticky":"node_modules/core-js/modules/es.regexp.sticky.js","../modules/es.regexp.test":"node_modules/core-js/modules/es.regexp.test.js","../modules/es.regexp.to-string":"node_modules/core-js/modules/es.regexp.to-string.js","../modules/es.set":"node_modules/core-js/modules/es.set.js","../modules/es.string.at-alternative":"node_modules/core-js/modules/es.string.at-alternative.js","../modules/es.string.code-point-at":"node_modules/core-js/modules/es.string.code-point-at.js","../modules/es.string.ends-with":"node_modules/core-js/modules/es.string.ends-with.js","../modules/es.string.from-code-point":"node_modules/core-js/modules/es.string.from-code-point.js","../modules/es.string.includes":"node_modules/core-js/modules/es.string.includes.js","../modules/es.string.is-well-formed":"node_modules/core-js/modules/es.string.is-well-formed.js","../modules/es.string.iterator":"node_modules/core-js/modules/es.string.iterator.js","../modules/es.string.match":"node_modules/core-js/modules/es.string.match.js","../modules/es.string.match-all":"node_modules/core-js/modules/es.string.match-all.js","../modules/es.string.pad-end":"node_modules/core-js/modules/es.string.pad-end.js","../modules/es.string.pad-start":"node_modules/core-js/modules/es.string.pad-start.js","../modules/es.string.raw":"node_modules/core-js/modules/es.string.raw.js","../modules/es.string.repeat":"node_modules/core-js/modules/es.string.repeat.js","../modules/es.string.replace":"node_modules/core-js/modules/es.string.replace.js","../modules/es.string.replace-all":"node_modules/core-js/modules/es.string.replace-all.js","../modules/es.string.search":"node_modules/core-js/modules/es.string.search.js","../modules/es.string.split":"node_modules/core-js/modules/es.string.split.js","../modules/es.string.starts-with":"node_modules/core-js/modules/es.string.starts-with.js","../modules/es.string.substr":"node_modules/core-js/modules/es.string.substr.js","../modules/es.string.to-well-formed":"node_modules/core-js/modules/es.string.to-well-formed.js","../modules/es.string.trim":"node_modules/core-js/modules/es.string.trim.js","../modules/es.string.trim-end":"node_modules/core-js/modules/es.string.trim-end.js","../modules/es.string.trim-start":"node_modules/core-js/modules/es.string.trim-start.js","../modules/es.string.anchor":"node_modules/core-js/modules/es.string.anchor.js","../modules/es.string.big":"node_modules/core-js/modules/es.string.big.js","../modules/es.string.blink":"node_modules/core-js/modules/es.string.blink.js","../modules/es.string.bold":"node_modules/core-js/modules/es.string.bold.js","../modules/es.string.fixed":"node_modules/core-js/modules/es.string.fixed.js","../modules/es.string.fontcolor":"node_modules/core-js/modules/es.string.fontcolor.js","../modules/es.string.fontsize":"node_modules/core-js/modules/es.string.fontsize.js","../modules/es.string.italics":"node_modules/core-js/modules/es.string.italics.js","../modules/es.string.link":"node_modules/core-js/modules/es.string.link.js","../modules/es.string.small":"node_modules/core-js/modules/es.string.small.js","../modules/es.string.strike":"node_modules/core-js/modules/es.string.strike.js","../modules/es.string.sub":"node_modules/core-js/modules/es.string.sub.js","../modules/es.string.sup":"node_modules/core-js/modules/es.string.sup.js","../modules/es.typed-array.float32-array":"node_modules/core-js/modules/es.typed-array.float32-array.js","../modules/es.typed-array.float64-array":"node_modules/core-js/modules/es.typed-array.float64-array.js","../modules/es.typed-array.int8-array":"node_modules/core-js/modules/es.typed-array.int8-array.js","../modules/es.typed-array.int16-array":"node_modules/core-js/modules/es.typed-array.int16-array.js","../modules/es.typed-array.int32-array":"node_modules/core-js/modules/es.typed-array.int32-array.js","../modules/es.typed-array.uint8-array":"node_modules/core-js/modules/es.typed-array.uint8-array.js","../modules/es.typed-array.uint8-clamped-array":"node_modules/core-js/modules/es.typed-array.uint8-clamped-array.js","../modules/es.typed-array.uint16-array":"node_modules/core-js/modules/es.typed-array.uint16-array.js","../modules/es.typed-array.uint32-array":"node_modules/core-js/modules/es.typed-array.uint32-array.js","../modules/es.typed-array.at":"node_modules/core-js/modules/es.typed-array.at.js","../modules/es.typed-array.copy-within":"node_modules/core-js/modules/es.typed-array.copy-within.js","../modules/es.typed-array.every":"node_modules/core-js/modules/es.typed-array.every.js","../modules/es.typed-array.fill":"node_modules/core-js/modules/es.typed-array.fill.js","../modules/es.typed-array.filter":"node_modules/core-js/modules/es.typed-array.filter.js","../modules/es.typed-array.find":"node_modules/core-js/modules/es.typed-array.find.js","../modules/es.typed-array.find-index":"node_modules/core-js/modules/es.typed-array.find-index.js","../modules/es.typed-array.find-last":"node_modules/core-js/modules/es.typed-array.find-last.js","../modules/es.typed-array.find-last-index":"node_modules/core-js/modules/es.typed-array.find-last-index.js","../modules/es.typed-array.for-each":"node_modules/core-js/modules/es.typed-array.for-each.js","../modules/es.typed-array.from":"node_modules/core-js/modules/es.typed-array.from.js","../modules/es.typed-array.includes":"node_modules/core-js/modules/es.typed-array.includes.js","../modules/es.typed-array.index-of":"node_modules/core-js/modules/es.typed-array.index-of.js","../modules/es.typed-array.iterator":"node_modules/core-js/modules/es.typed-array.iterator.js","../modules/es.typed-array.join":"node_modules/core-js/modules/es.typed-array.join.js","../modules/es.typed-array.last-index-of":"node_modules/core-js/modules/es.typed-array.last-index-of.js","../modules/es.typed-array.map":"node_modules/core-js/modules/es.typed-array.map.js","../modules/es.typed-array.of":"node_modules/core-js/modules/es.typed-array.of.js","../modules/es.typed-array.reduce":"node_modules/core-js/modules/es.typed-array.reduce.js","../modules/es.typed-array.reduce-right":"node_modules/core-js/modules/es.typed-array.reduce-right.js","../modules/es.typed-array.reverse":"node_modules/core-js/modules/es.typed-array.reverse.js","../modules/es.typed-array.set":"node_modules/core-js/modules/es.typed-array.set.js","../modules/es.typed-array.slice":"node_modules/core-js/modules/es.typed-array.slice.js","../modules/es.typed-array.some":"node_modules/core-js/modules/es.typed-array.some.js","../modules/es.typed-array.sort":"node_modules/core-js/modules/es.typed-array.sort.js","../modules/es.typed-array.subarray":"node_modules/core-js/modules/es.typed-array.subarray.js","../modules/es.typed-array.to-locale-string":"node_modules/core-js/modules/es.typed-array.to-locale-string.js","../modules/es.typed-array.to-reversed":"node_modules/core-js/modules/es.typed-array.to-reversed.js","../modules/es.typed-array.to-sorted":"node_modules/core-js/modules/es.typed-array.to-sorted.js","../modules/es.typed-array.to-string":"node_modules/core-js/modules/es.typed-array.to-string.js","../modules/es.typed-array.with":"node_modules/core-js/modules/es.typed-array.with.js","../modules/es.unescape":"node_modules/core-js/modules/es.unescape.js","../modules/es.weak-map":"node_modules/core-js/modules/es.weak-map.js","../modules/es.weak-set":"node_modules/core-js/modules/es.weak-set.js","../modules/web.atob":"node_modules/core-js/modules/web.atob.js","../modules/web.btoa":"node_modules/core-js/modules/web.btoa.js","../modules/web.dom-collections.for-each":"node_modules/core-js/modules/web.dom-collections.for-each.js","../modules/web.dom-collections.iterator":"node_modules/core-js/modules/web.dom-collections.iterator.js","../modules/web.dom-exception.constructor":"node_modules/core-js/modules/web.dom-exception.constructor.js","../modules/web.dom-exception.stack":"node_modules/core-js/modules/web.dom-exception.stack.js","../modules/web.dom-exception.to-string-tag":"node_modules/core-js/modules/web.dom-exception.to-string-tag.js","../modules/web.immediate":"node_modules/core-js/modules/web.immediate.js","../modules/web.queue-microtask":"node_modules/core-js/modules/web.queue-microtask.js","../modules/web.self":"node_modules/core-js/modules/web.self.js","../modules/web.structured-clone":"node_modules/core-js/modules/web.structured-clone.js","../modules/web.timers":"node_modules/core-js/modules/web.timers.js","../modules/web.url":"node_modules/core-js/modules/web.url.js","../modules/web.url.can-parse":"node_modules/core-js/modules/web.url.can-parse.js","../modules/web.url.to-json":"node_modules/core-js/modules/web.url.to-json.js","../modules/web.url-search-params":"node_modules/core-js/modules/web.url-search-params.js","../modules/web.url-search-params.delete":"node_modules/core-js/modules/web.url-search-params.delete.js","../modules/web.url-search-params.has":"node_modules/core-js/modules/web.url-search-params.has.js","../modules/web.url-search-params.size":"node_modules/core-js/modules/web.url-search-params.size.js","../internals/path":"node_modules/core-js/internals/path.js"}],"src/js/controller.js":[function(require,module,exports) {
 "use strict";
 
-var _icons = _interopRequireDefault(require("../img/icons.svg"));
+var model = _interopRequireWildcard(require("./model"));
+var _recipeView = _interopRequireDefault(require("./views/recipeView"));
 require("core-js/stable");
 require("regenerator-runtime/runtime");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw new Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator.return && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw new Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, catch: function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw new Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -17461,20 +17962,10 @@ var timeout = function timeout(s) {
 
 ///////////////////////////////////////
 
-// Function to render a spinner inside a specified parent element
-var renderSpinner = function renderSpinner(parentEl) {
-  // Creating markup for the spinner
-  var markup = "\n  <div class=\"spinner\">\n          <svg>\n            <use href=\"".concat(_icons.default, "#icon-loader\"></use>\n          </svg>\n        </div>");
-
-  // Clearing the parent element and inserting the spinner markup
-  parentEl.innerHTML = '';
-  parentEl.insertAdjacentHTML('afterbegin', markup);
-};
-
 // Fetching a recipe data from the Forkify API
-var showRecipe = /*#__PURE__*/function () {
+var controlRecipes = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-    var id, res, data, recipe, markup;
+    var id;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
@@ -17486,67 +17977,43 @@ var showRecipe = /*#__PURE__*/function () {
           }
           return _context.abrupt("return");
         case 4:
-          renderSpinner(recipeContainer);
+          _recipeView.default.renderSpinner();
+
+          //Loading recipe
           _context.next = 7;
-          return fetch("https://forkify-api.herokuapp.com/api/v2/recipes/".concat(id));
+          return model.loadRecipe(id);
         case 7:
-          res = _context.sent;
-          _context.next = 10;
-          return res.json();
-        case 10:
-          data = _context.sent;
-          if (res.ok) {
-            _context.next = 13;
-            break;
-          }
-          throw new Error("".concat(data.message, " (").concat(res.status, ")"));
-        case 13:
-          // Extracting recipe data from the response
-          recipe = data.data.recipe; //data.data.recipe
-          recipe = {
-            id: recipe.id,
-            title: recipe.title,
-            publisher: recipe.publisher,
-            sourceUrl: recipe.source_url,
-            image: recipe.image_url,
-            servings: recipe.servings,
-            cookingTime: recipe.cooking_time,
-            ingredients: recipe.ingredients
-          }; // Restructuring the recipe data
+          // const { recipe } = model.state;
 
           //Rendering the recipe--------------------------------------------------------
-          markup = "\n    <figure class=\"recipe__fig\">\n          <img src=\"".concat(recipe.image, "\" alt=\"").concat(recipe.title, "\" class=\"recipe__img\" />\n          <h1 class=\"recipe__title\">\n            <span>").concat(recipe.title, "</span>\n          </h1>\n        </figure>\n\n        <div class=\"recipe__details\">\n          <div class=\"recipe__info\">\n            <svg class=\"recipe__info-icon\">\n              <use href=\"").concat(_icons.default, "#icon-clock\"></use>\n            </svg>\n            <span class=\"recipe__info-data recipe__info-data--minutes\">").concat(recipe.cookingTime, "</span>\n            <span class=\"recipe__info-text\">minutes</span>\n          </div>\n          <div class=\"recipe__info\">\n            <svg class=\"recipe__info-icon\">\n              <use href=\"").concat(_icons.default, "#icon-users\"></use>\n            </svg>\n            <span class=\"recipe__info-data recipe__info-data--people\">").concat(recipe.servings, "</span>\n            <span class=\"recipe__info-text\">servings</span>\n\n            <div class=\"recipe__info-buttons\">\n              <button class=\"btn--tiny btn--increase-servings\">\n                <svg>\n                  <use href=\"").concat(_icons.default, "#icon-minus-circle\"></use>\n                </svg>\n              </button>\n              <button class=\"btn--tiny btn--increase-servings\">\n                <svg>\n                  <use href=\"").concat(_icons.default, "#icon-plus-circle\"></use>\n                </svg>\n              </button>\n            </div>\n          </div>\n\n          <div class=\"recipe__user-generated\">\n            <svg>\n              <use href=\"").concat(_icons.default, "#icon-user\"></use>\n            </svg>\n          </div>\n          <button class=\"btn--round\">\n            <svg class=\"\">\n              <use href=\"").concat(_icons.default, "#icon-bookmark-fill\"></use>\n            </svg>\n          </button>\n        </div>\n\n        <div class=\"recipe__ingredients\">\n          <h2 class=\"heading--2\">Recipe ingredients</h2>\n          <ul class=\"recipe__ingredient-list\">\n            ").concat(recipe.ingredients.map(function (ing) {
-            return "\n              <li class=\"recipe__ingredient\">\n              <svg class=\"recipe__icon\">\n                <use href=\"".concat(_icons.default, "#icon-check\"></use>\n              </svg>\n              <div class=\"recipe__quantity\">").concat(ing.quantity, "</div>\n              <div class=\"recipe__description\">\n                <span class=\"recipe__unit\">").concat(ing.unit, "</span>\n                ").concat(ing.description, "\n              </div>\n            </li>");
-          }).join(''), "\n          </ul>\n        </div>\n\n        <div class=\"recipe__directions\">\n          <h2 class=\"heading--2\">How to cook it</h2>\n          <p class=\"recipe__directions-text\">\n            This recipe was carefully designed and tested by\n            <span class=\"recipe__publisher\">").concat(recipe.publisher, "</span>. Please check out\n            directions at their website.\n          </p>\n          <a\n            class=\"btn--small recipe__btn\"\n            href=\"").concat(recipe.sourceUrl, "\"\n            target=\"_blank\"\n          >\n            <span>Directions</span>\n            <svg class=\"search__icon\">\n              <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n            </svg>\n          </a>\n        </div>\n    "); // Inserting the recipe markup into the DOM
-          recipeContainer.innerHTML = '';
-          recipeContainer.insertAdjacentHTML('afterbegin', markup);
-          _context.next = 23;
+          _recipeView.default.render(model.state.recipe);
+          _context.next = 13;
           break;
-        case 20:
-          _context.prev = 20;
+        case 10:
+          _context.prev = 10;
           _context.t0 = _context["catch"](0);
           // Alerting an error if there is any problem with fetching or processing the data
           alert(_context.t0);
-        case 23:
+        case 13:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 20]]);
+    }, _callee, null, [[0, 10]]);
   }));
-  return function showRecipe() {
+  return function controlRecipes() {
     return _ref.apply(this, arguments);
   };
 }();
-showRecipe(); // Invoking the showRecipe function to fetch and display the recipe
+controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
 
 //Listening fro load and hashchange Event-----------------------------------------
 
 ['hashchange', 'load'].forEach(function (ev) {
-  return window.addEventListener(ev, showRecipe);
+  return window.addEventListener(ev, controlRecipes);
 });
-// window.addEventListener('hashchange', showRecipe);
-// window.addEventListener('load', showRecipe);
-},{"../img/icons.svg":"src/img/icons.svg","core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+// window.addEventListener('hashchange', controlRecipes);
+// window.addEventListener('load', controlRecipes);
+},{"./model":"src/js/model.js","./views/recipeView":"src/js/views/recipeView.js","core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
