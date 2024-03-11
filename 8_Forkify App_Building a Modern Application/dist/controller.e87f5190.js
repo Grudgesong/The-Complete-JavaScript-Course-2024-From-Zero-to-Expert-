@@ -976,13 +976,46 @@ var View = exports.default = /*#__PURE__*/function () {
     value:
     // Method to render recipe onto the DOM
     function render(data) {
+      // Check if data is empty or undefined
       if (!data || Array.isArray(data) && data.length === 0) {
         return this.renderError();
       }
+      // Store the new data
       this._data = data;
+      // Generate new markup based on the data
       var markup = this._generateMarkup(); // Generate markup for recipe
       this._clear();
       this._parentElement.insertAdjacentHTML('afterbegin', markup); // Insert recipe markup into DOM
+    }
+  }, {
+    key: "_update",
+    value: function _update(data) {
+      this._data = data;
+      var newMarkup = this._generateMarkup();
+
+      //Convert markup to dom object
+      var newDOM = document.createRange().createContextualFragment(newMarkup);
+      // Convert DOM object into array of elements
+      var newElements = Array.from(newDOM.querySelectorAll('*'));
+      var curElements = Array.from(this._parentElement.querySelectorAll('*'));
+
+      // Iterate through each new element
+      newElements.forEach(function (newEl, i) {
+        var _newEl$firstChild;
+        var curEl = curElements[i];
+
+        // Update changed text if it's different from the current element's text content
+        if (!newEl.isEqualNode(curEl) && ((_newEl$firstChild = newEl.firstChild) === null || _newEl$firstChild === void 0 ? void 0 : _newEl$firstChild.nodeValue.trim()) !== '') {
+          curEl.textContent = newEl.textContent;
+        }
+
+        // Update changed attributes if they're different from the current element's attributes
+        if (!newEl.isEqualNode(curEl)) {
+          Array.from(newEl.attributes).forEach(function (attr) {
+            return curEl.setAttribute(attr.name, attr.value);
+          });
+        }
+      });
     }
 
     // Method to clear the parent element
@@ -1489,13 +1522,21 @@ var ResultView = /*#__PURE__*/function (_View) {
   }
   _createClass(ResultView, [{
     key: "_generateMarkup",
-    value: function _generateMarkup() {
+    value:
+    // Method to generate the HTML markup for the results
+    function _generateMarkup() {
+      // Mapping over the data array and generating markup for each result, then joining them together
       return this._data.map(this._generateMarkupPreview).join('');
     }
+
+    // Method to generate HTML markup for a single preview/result
   }, {
     key: "_generateMarkupPreview",
     value: function _generateMarkupPreview(result) {
-      return "<li class=\"preview\">\n    <a class=\"preview__link\" href=\"#".concat(result.id, "\">\n      <figure class=\"preview__fig\">\n        <img src=\"").concat(result.image, "\" alt=\"").concat(result.title, "\" />\n      </figure>\n      <div class=\"preview__data\">\n        <h4 class=\"preview__title\">").concat(result.title, "</h4>\n        <p class=\"preview__publisher\">").concat(result.publisher, "</p>\n      </div>\n    </a>\n  </li>");
+      // Extracting the id from the URL hash
+      var id = window.location.hash.slice(1);
+      // Generating HTML markup for a single result preview
+      return "<li class=\"preview\">\n    <a class=\"preview__link ".concat(result.id === id ? 'preciew__link--active' : '', "\" href=\"#").concat(result.id, "\">\n      <figure class=\"preview__fig\">\n        <img src=\"").concat(result.image, "\" alt=\"").concat(result.title, "\" />\n      </figure>\n      <div class=\"preview__data\">\n        <h4 class=\"preview__title\">").concat(result.title, "</h4>\n        <p class=\"preview__publisher\">").concat(result.publisher, "</p>\n      </div>\n    </a>\n  </li>");
     }
   }]);
   return ResultView;
@@ -18170,25 +18211,28 @@ var controlRecipes = /*#__PURE__*/function () {
         case 4:
           _recipeView.default.renderSpinner();
 
+          //Update results view to mark selected search result
+          _resultView.default._update(model.getSearchResultsPage());
+
           //Loading recipe
-          _context.next = 7;
+          _context.next = 8;
           return model.loadRecipe(id);
-        case 7:
+        case 8:
           // const { recipe } = model.state;
 
           //Rendering the recipe--------------------------------------------------------
           _recipeView.default.render(model.state.recipe);
-          _context.next = 13;
+          _context.next = 14;
           break;
-        case 10:
-          _context.prev = 10;
+        case 11:
+          _context.prev = 11;
           _context.t0 = _context["catch"](0);
           _recipeView.default.renderError();
-        case 13:
+        case 14:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 10]]);
+    }, _callee, null, [[0, 11]]);
   }));
   return function controlRecipes() {
     return _ref.apply(this, arguments);
@@ -18244,7 +18288,8 @@ var controlServings = function controlServings(newServings) {
   //Update the recipe servings(in state)
   model.updateServings(newServings);
   //Update the recipe view
-  _recipeView.default.render(model.state.recipe);
+  // recipeView.render(model.state.recipe);
+  _recipeView.default._update(model.state.recipe);
 };
 var init = function init() {
   _recipeView.default.addHandlerRender(controlRecipes);
@@ -18278,7 +18323,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63896" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64255" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

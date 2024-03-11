@@ -5,14 +5,47 @@ export default class View {
 
   // Method to render recipe onto the DOM
   render(data) {
+    // Check if data is empty or undefined
     if (!data || (Array.isArray(data) && data.length === 0)) {
       return this.renderError();
     }
-
+    // Store the new data
     this._data = data;
+    // Generate new markup based on the data
     const markup = this._generateMarkup(); // Generate markup for recipe
     this._clear();
     this._parentElement.insertAdjacentHTML('afterbegin', markup); // Insert recipe markup into DOM
+  }
+
+  _update(data) {
+    this._data = data;
+    const newMarkup = this._generateMarkup();
+
+    //Convert markup to dom object
+    const newDOM = document.createRange().createContextualFragment(newMarkup);
+    // Convert DOM object into array of elements
+    const newElements = Array.from(newDOM.querySelectorAll('*'));
+    const curElements = Array.from(this._parentElement.querySelectorAll('*'));
+
+    // Iterate through each new element
+    newElements.forEach((newEl, i) => {
+      const curEl = curElements[i];
+
+      // Update changed text if it's different from the current element's text content
+      if (
+        !newEl.isEqualNode(curEl) &&
+        newEl.firstChild?.nodeValue.trim() !== ''
+      ) {
+        curEl.textContent = newEl.textContent;
+      }
+
+      // Update changed attributes if they're different from the current element's attributes
+      if (!newEl.isEqualNode(curEl)) {
+        Array.from(newEl.attributes).forEach(attr =>
+          curEl.setAttribute(attr.name, attr.value)
+        );
+      }
+    });
   }
 
   // Method to clear the parent element
