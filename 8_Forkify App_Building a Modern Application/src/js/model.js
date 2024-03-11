@@ -1,5 +1,5 @@
 import { async } from 'regenerator-runtime';
-import { API_URL } from './config';
+import { API_URL, RES_PER_PAGE } from './config';
 import { getJSON } from './helpers';
 import recipeView from './views/recipeView';
 
@@ -9,6 +9,8 @@ export const state = {
   search: {
     query: '', // Query string for search
     results: [], // Array to store search results
+    page: 1,
+    resultsPerPage: RES_PER_PAGE,
   },
 };
 
@@ -56,4 +58,12 @@ export const loadSearchResults = async function (query) {
   } catch (err) {
     throw err;
   }
+};
+
+// Function to get search results for a specific page
+export const getSearchResultsPage = function (page = state.search.page) {
+  state.search.page = page; // Update the current page in the state
+  const start = (page - 1) * state.search.resultsPerPage; //0 // Calculate the starting index of the results for the given page
+  const end = page * state.search.resultsPerPage; //9 // Calculate the ending index of the results for the given page
+  return state.search.results.slice(start, end); // Return the results for the given page
 };

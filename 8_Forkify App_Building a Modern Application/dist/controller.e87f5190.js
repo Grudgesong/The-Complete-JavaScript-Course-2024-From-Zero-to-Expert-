@@ -887,9 +887,10 @@ try {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TIMEOUT_SEC = exports.API_URL = void 0;
+exports.TIMEOUT_SEC = exports.RES_PER_PAGE = exports.API_URL = void 0;
 var API_URL = exports.API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
 var TIMEOUT_SEC = exports.TIMEOUT_SEC = 10;
+var RES_PER_PAGE = exports.RES_PER_PAGE = 10;
 },{}],"src/js/helpers.js":[function(require,module,exports) {
 "use strict";
 
@@ -1266,7 +1267,7 @@ var _default = exports.default = new RecipeView();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.state = exports.loadSearchResults = exports.loadRecipe = void 0;
+exports.state = exports.loadSearchResults = exports.loadRecipe = exports.getSearchResultsPage = void 0;
 var _regeneratorRuntime2 = require("regenerator-runtime");
 var _config = require("./config");
 var _helpers = require("./helpers");
@@ -1283,7 +1284,10 @@ var state = exports.state = {
   search: {
     query: '',
     // Query string for search
-    results: [] // Array to store search results
+    results: [],
+    // Array to store search results
+    page: 1,
+    resultsPerPage: _config.RES_PER_PAGE
   }
 };
 
@@ -1373,6 +1377,15 @@ var loadSearchResults = exports.loadSearchResults = /*#__PURE__*/function () {
     return _ref2.apply(this, arguments);
   };
 }();
+
+// Function to get search results for a specific page
+var getSearchResultsPage = exports.getSearchResultsPage = function getSearchResultsPage() {
+  var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : state.search.page;
+  state.search.page = page; // Update the current page in the state
+  var start = (page - 1) * state.search.resultsPerPage; //0 // Calculate the starting index of the results for the given page
+  var end = page * state.search.resultsPerPage; //9 // Calculate the ending index of the results for the given page
+  return state.search.results.slice(start, end); // Return the results for the given page
+};
 },{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","./config":"src/js/config.js","./helpers":"src/js/helpers.js","./views/recipeView":"src/js/views/recipeView.js"}],"src/js/views/searchView.js":[function(require,module,exports) {
 "use strict";
 
@@ -18107,7 +18120,7 @@ var controlSearchResults = /*#__PURE__*/function () {
           return model.loadSearchResults(query);
         case 7:
           //render results
-          _resultView.default.render(model.state.search.results);
+          _resultView.default.render(model.getSearchResultsPage()); // Render the search results for the current page
           _context2.next = 12;
           break;
         case 10:
@@ -18156,7 +18169,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65352" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57675" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
