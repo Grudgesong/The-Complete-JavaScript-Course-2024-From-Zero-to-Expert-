@@ -2,15 +2,16 @@ import * as model from './model';
 import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultView from './views/resultView';
+import paginationView from './views/paginationView';
 
 // Importing 'core-js/stable' polyfill for ECMAScript features that are not natively supported by the browser
 import 'core-js/stable';
 // Importing 'regenerator-runtime/runtime' polyfill for generator functions and async/await syntax
 import 'regenerator-runtime/runtime';
 
-if (module.hot) {
-  module.hot.accept();
-}
+// if (module.hot) {
+//   module.hot.accept();
+// }
 
 // Selecting the HTML element with class 'recipe'
 const recipeContainer = document.querySelector('.recipe');
@@ -48,7 +49,18 @@ const controlSearchResults = async function () {
 
     //render results
     resultView.render(model.getSearchResultsPage()); // Render the search results for the current page
+
+    //Render the initial pagination class
+    paginationView.render(model.state.search);
   } catch (err) {}
+};
+
+const controlPagination = function (goToPage) {
+  //render new results
+  resultView.render(model.getSearchResultsPage(goToPage)); // Render the search results for the current page
+
+  //Render new pagination buttons
+  paginationView.render(model.state.search);
 };
 
 // controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
@@ -56,5 +68,6 @@ const controlSearchResults = async function () {
 const init = function () {
   recipeView.addHandlerRender(controlRecipes);
   searchView.addHandlerSearch(controlSearchResults);
+  paginationView._addHandlerClick(controlPagination);
 };
 init();
