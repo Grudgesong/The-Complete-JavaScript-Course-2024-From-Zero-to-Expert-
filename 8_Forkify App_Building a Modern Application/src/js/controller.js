@@ -1,5 +1,7 @@
 import icons from '../img/icons.svg';
+// Importing 'core-js/stable' polyfill for ECMAScript features that are not natively supported by the browser
 import 'core-js/stable';
+// Importing 'regenerator-runtime/runtime' polyfill for generator functions and async/await syntax
 import 'regenerator-runtime/runtime';
 
 // Selecting the HTML element with class 'recipe'
@@ -36,9 +38,13 @@ const renderSpinner = function (parentEl) {
 // Fetching a recipe data from the Forkify API
 const showRecipe = async function () {
   try {
+    const id = window.location.hash.slice(1);
+
+    if (!id) return;
+
     renderSpinner(recipeContainer);
     const res = await fetch(
-      'https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bc886'
+      `https://forkify-api.herokuapp.com/api/v2/recipes/${id}`
     ); // Sending a GET request to the API endpoint
     const data = await res.json(); // Parsing the JSON response
 
@@ -167,3 +173,9 @@ const showRecipe = async function () {
 };
 
 showRecipe(); // Invoking the showRecipe function to fetch and display the recipe
+
+//Listening fro load and hashchange Event-----------------------------------------
+
+['hashchange', 'load'].forEach(ev => window.addEventListener(ev, showRecipe));
+// window.addEventListener('hashchange', showRecipe);
+// window.addEventListener('load', showRecipe);
