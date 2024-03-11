@@ -9,15 +9,6 @@ import 'regenerator-runtime/runtime';
 // Selecting the HTML element with class 'recipe'
 const recipeContainer = document.querySelector('.recipe');
 
-const timeout = function (s) {
-  // Defining a function that returns a promise, rejecting it after a specified time
-  return new Promise(function (_, reject) {
-    setTimeout(function () {
-      reject(new Error(`Request took too long! Timeout after ${s} second`));
-    }, s * 1000);
-  });
-};
-
 // https://forkify-api.herokuapp.com/v2
 
 ///////////////////////////////////////
