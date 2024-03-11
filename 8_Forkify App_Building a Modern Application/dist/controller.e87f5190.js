@@ -1243,12 +1243,22 @@ var RecipeView = /*#__PURE__*/function (_View) {
       // window.addEventListener('hashchange', controlRecipes);
       // window.addEventListener('load', controlRecipes);
     }
+  }, {
+    key: "addHandlerUpdateServings",
+    value: function addHandlerUpdateServings(handler) {
+      this._parentElement.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn--update-servings');
+        if (!btn) return;
+        var updateTo = btn.dataset.updateTo;
+        if (+updateTo > 0) handler(+updateTo);
+      });
+    }
 
     // Method to generate markup for rendering the recipe
   }, {
     key: "_generateMarkup",
     value: function _generateMarkup() {
-      return "\n    <figure class=\"recipe__fig\">\n          <img src=\"".concat(this._data.image, "\" alt=\"").concat(this._data.title, "\" class=\"recipe__img\" />\n          <h1 class=\"recipe__title\">\n            <span>").concat(this._data.title, "</span>\n          </h1>\n        </figure>\n\n        <div class=\"recipe__details\">\n          <div class=\"recipe__info\">\n            <svg class=\"recipe__info-icon\">\n              <use href=\"").concat(_icons.default, "#icon-clock\"></use>\n            </svg>\n            <span class=\"recipe__info-data recipe__info-data--minutes\">").concat(this._data.cookingTime, "</span>\n            <span class=\"recipe__info-text\">minutes</span>\n          </div>\n          <div class=\"recipe__info\">\n            <svg class=\"recipe__info-icon\">\n              <use href=\"").concat(_icons.default, "#icon-users\"></use>\n            </svg>\n            <span class=\"recipe__info-data recipe__info-data--people\">").concat(this._data.servings, "</span>\n            <span class=\"recipe__info-text\">servings</span>\n\n            <div class=\"recipe__info-buttons\">\n              <button class=\"btn--tiny btn--increase-servings\">\n                <svg>\n                  <use href=\"").concat(_icons.default, "#icon-minus-circle\"></use>\n                </svg>\n              </button>\n              <button class=\"btn--tiny btn--increase-servings\">\n                <svg>\n                  <use href=\"").concat(_icons.default, "#icon-plus-circle\"></use>\n                </svg>\n              </button>\n            </div>\n          </div>\n\n          <div class=\"recipe__user-generated\">\n          </div>\n          <button class=\"btn--round\">\n            <svg class=\"\">\n              <use href=\"").concat(_icons.default, "#icon-bookmark-fill\"></use>\n            </svg>\n          </button>\n        </div>\n\n        <div class=\"recipe__ingredients\">\n          <h2 class=\"heading--2\">Recipe ingredients</h2>\n          <ul class=\"recipe__ingredient-list\">\n            ").concat(this._data.ingredients.map(this._generateMarkupIngredient).join(''), "\n          </ul>\n        </div>\n\n        <div class=\"recipe__directions\">\n          <h2 class=\"heading--2\">How to cook it</h2>\n          <p class=\"recipe__directions-text\">\n            This recipe was carefully designed and tested by\n            <span class=\"recipe__publisher\">").concat(this._data.publisher, "</span>. Please check out\n            directions at their website.\n          </p>\n          <a\n            class=\"btn--small recipe__btn\"\n            href=\"").concat(this._data.sourceUrl, "\"\n            target=\"_blank\"\n          >\n            <span>Directions</span>\n            <svg class=\"search__icon\">\n              <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n            </svg>\n          </a>\n        </div>\n    ");
+      return "\n    <figure class=\"recipe__fig\">\n          <img src=\"".concat(this._data.image, "\" alt=\"").concat(this._data.title, "\" class=\"recipe__img\" />\n          <h1 class=\"recipe__title\">\n            <span>").concat(this._data.title, "</span>\n          </h1>\n        </figure>\n\n        <div class=\"recipe__details\">\n          <div class=\"recipe__info\">\n            <svg class=\"recipe__info-icon\">\n              <use href=\"").concat(_icons.default, "#icon-clock\"></use>\n            </svg>\n            <span class=\"recipe__info-data recipe__info-data--minutes\">").concat(this._data.cookingTime, "</span>\n            <span class=\"recipe__info-text\">minutes</span>\n          </div>\n          <div class=\"recipe__info\">\n            <svg class=\"recipe__info-icon\">\n              <use href=\"").concat(_icons.default, "#icon-users\"></use>\n            </svg>\n            <span class=\"recipe__info-data recipe__info-data--people\">").concat(this._data.servings, "</span>\n            <span class=\"recipe__info-text\">servings</span>\n\n            <div class=\"recipe__info-buttons\">\n              <button class=\"btn--tiny btn--update-servings\" data-update-to=\"").concat(this._data.servings - 1, "\">\n                <svg>\n                  <use href=\"").concat(_icons.default, "#icon-minus-circle\"></use>\n                </svg>\n              </button>\n              <button class=\"btn--tiny btn--update-servings\" data-update-to=\"").concat(this._data.servings + 1, "\">\n                <svg>\n                  <use href=\"").concat(_icons.default, "#icon-plus-circle\"></use>\n                </svg>\n              </button>\n            </div>\n          </div>\n\n          <div class=\"recipe__user-generated\">\n          </div>\n          <button class=\"btn--round\">\n            <svg class=\"\">\n              <use href=\"").concat(_icons.default, "#icon-bookmark-fill\"></use>\n            </svg>\n          </button>\n        </div>\n\n        <div class=\"recipe__ingredients\">\n          <h2 class=\"heading--2\">Recipe ingredients</h2>\n          <ul class=\"recipe__ingredient-list\">\n            ").concat(this._data.ingredients.map(this._generateMarkupIngredient).join(''), "\n          </ul>\n        </div>\n\n        <div class=\"recipe__directions\">\n          <h2 class=\"heading--2\">How to cook it</h2>\n          <p class=\"recipe__directions-text\">\n            This recipe was carefully designed and tested by\n            <span class=\"recipe__publisher\">").concat(this._data.publisher, "</span>. Please check out\n            directions at their website.\n          </p>\n          <a\n            class=\"btn--small recipe__btn\"\n            href=\"").concat(this._data.sourceUrl, "\"\n            target=\"_blank\"\n          >\n            <span>Directions</span>\n            <svg class=\"search__icon\">\n              <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n            </svg>\n          </a>\n        </div>\n    ");
 
       // Inserting the recipe markup into the DOM
     }
@@ -1267,7 +1277,7 @@ var _default = exports.default = new RecipeView();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.state = exports.loadSearchResults = exports.loadRecipe = exports.getSearchResultsPage = void 0;
+exports.updateServings = exports.state = exports.loadSearchResults = exports.loadRecipe = exports.getSearchResultsPage = void 0;
 var _regeneratorRuntime2 = require("regenerator-runtime");
 var _config = require("./config");
 var _helpers = require("./helpers");
@@ -1386,6 +1396,13 @@ var getSearchResultsPage = exports.getSearchResultsPage = function getSearchResu
   var end = page * state.search.resultsPerPage; //9 // Calculate the ending index of the results for the given page
   return state.search.results.slice(start, end); // Return the results for the given page
 };
+var updateServings = exports.updateServings = function updateServings(newServings) {
+  state.recipe.ingredients.forEach(function (ing) {
+    ing.quantity = ing.quantity * newServings / state.recipe.servings;
+    // newQt=oldQt * newServings / oldSercings
+  });
+  state.recipe.servings = newServings;
+};
 },{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","./config":"src/js/config.js","./helpers":"src/js/helpers.js","./views/recipeView":"src/js/views/recipeView.js"}],"src/js/views/searchView.js":[function(require,module,exports) {
 "use strict";
 
@@ -1491,7 +1508,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-var _view = _interopRequireDefault(require("./view"));
+var _view = _interopRequireDefault(require("./view.js"));
 var _icons = _interopRequireDefault(require("../../img/icons.svg"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -1521,45 +1538,44 @@ var PaginationView = /*#__PURE__*/function (_View) {
     return _this;
   }
   _createClass(PaginationView, [{
-    key: "_addHandlerClick",
-    value:
-    // Selecting parent element
-
-    function _addHandlerClick(handle) {
+    key: "addHandlerClick",
+    value: function addHandlerClick(handler) {
       this._parentElement.addEventListener('click', function (e) {
-        e.preventDefault();
         var btn = e.target.closest('.btn--inline');
+        if (!btn) return;
+        var goToPage = +btn.dataset.goto;
+        handler(goToPage);
       });
     }
   }, {
     key: "_generateMarkup",
     value: function _generateMarkup() {
-      var numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
       var curPage = this._data.page;
-      if (!btn) return;
-      var goToPage = +btn.dataset.goto;
-      handler(goToPage);
+      var numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
 
-      //Page 1 and there are other pages
+      // Page 1, and there are other pages
       if (curPage === 1 && numPages > 1) {
-        return "\n      <button data-goto=\"".concat(curPage + 1, "\" class=\"btn--inline pagination__btn--next\">\n            <span>Page ").concat(curPage + 1, "</span>\n            <svg class=\"search__icon\">\n              <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n            </svg>\n          </button>");
+        return "\n        <button data-goto=\"".concat(curPage + 1, "\" class=\"btn--inline pagination__btn--next\">\n          <span>Page ").concat(curPage + 1, "</span>\n          <svg class=\"search__icon\">\n            <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n          </svg>\n        </button>\n      ");
       }
-      //Last page
+
+      // Last page
       if (curPage === numPages && numPages > 1) {
-        return "<button data-goto=\"".concat(curPage - 1, "\" class=\"btn--inline pagination__btn--prev\">\n      <svg class=\"search__icon\">\n        <use href=\"").concat(_icons.default, "#icon-arrow-left\"></use>\n      </svg>\n      <span>Page ").concat(curPage - 1, "</span>\n    </button>\n    ");
+        return "\n        <button data-goto=\"".concat(curPage - 1, "\" class=\"btn--inline pagination__btn--prev\">\n          <svg class=\"search__icon\">\n            <use href=\"").concat(_icons.default, "#icon-arrow-left\"></use>\n          </svg>\n          <span>Page ").concat(curPage - 1, "</span>\n        </button>\n      ");
       }
-      //Other Page
+
+      // Other page
       if (curPage < numPages) {
-        return "<button data-goto=\"".concat(curPage - 1, "\" class=\"btn--inline pagination__btn--prev\">\n      <svg class=\"search__icon\">\n        <use href=\"").concat(_icons.default, "#icon-arrow-left\"></use>\n      </svg>\n      <span>Page ").concat(curPage - 1, "</span>\n    </button>\n    <button data-goto=\"").concat(curPage + 1, "\" class=\"btn--inline pagination__btn--next\">\n            <span>Page ").concat(curPage + 1, "</span>\n            <svg class=\"search__icon\">\n              <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n            </svg>\n          </button>\n    ");
+        return "\n        <button data-goto=\"".concat(curPage - 1, "\" class=\"btn--inline pagination__btn--prev\">\n          <svg class=\"search__icon\">\n            <use href=\"").concat(_icons.default, "#icon-arrow-left\"></use>\n          </svg>\n          <span>Page ").concat(curPage - 1, "</span>\n        </button>\n        <button data-goto=\"").concat(curPage + 1, "\" class=\"btn--inline pagination__btn--next\">\n          <span>Page ").concat(curPage + 1, "</span>\n          <svg class=\"search__icon\">\n            <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n          </svg>\n        </button>\n      ");
       }
-      //Page 1 and there are no other pages
+
+      // Page 1, and there are NO other pages
       return '';
     }
   }]);
   return PaginationView;
 }(_view.default);
 var _default = exports.default = new PaginationView();
-},{"./view":"src/js/views/view.js","../../img/icons.svg":"src/img/icons.svg"}],"node_modules/core-js/internals/global.js":[function(require,module,exports) {
+},{"./view.js":"src/js/views/view.js","../../img/icons.svg":"src/img/icons.svg"}],"node_modules/core-js/internals/global.js":[function(require,module,exports) {
 var global = arguments[3];
 'use strict';
 var check = function (it) {
@@ -18135,6 +18151,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 // Selecting the HTML element with class 'recipe'
 var recipeContainer = document.querySelector('.recipe');
 
+// controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
+
 // Fetching a recipe data from the Forkify API
 var controlRecipes = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -18222,13 +18240,17 @@ var controlPagination = function controlPagination(goToPage) {
   //Render new pagination buttons
   _paginationView.default.render(model.state.search);
 };
-
-// controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
-
+var controlServings = function controlServings(newServings) {
+  //Update the recipe servings(in state)
+  model.updateServings(newServings);
+  //Update the recipe view
+  _recipeView.default.render(model.state.recipe);
+};
 var init = function init() {
   _recipeView.default.addHandlerRender(controlRecipes);
+  _recipeView.default.addHandlerUpdateServings(controlServings);
   _searchView.default.addHandlerSearch(controlSearchResults);
-  _paginationView.default._addHandlerClick(controlPagination);
+  _paginationView.default.addHandlerClick(controlPagination);
 };
 init();
 },{"./model":"src/js/model.js","./views/recipeView":"src/js/views/recipeView.js","./views/searchView":"src/js/views/searchView.js","./views/resultView":"src/js/views/resultView.js","./views/paginationView":"src/js/views/paginationView.js","core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
@@ -18256,7 +18278,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61294" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63896" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

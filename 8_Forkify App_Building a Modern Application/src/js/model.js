@@ -67,3 +67,12 @@ export const getSearchResultsPage = function (page = state.search.page) {
   const end = page * state.search.resultsPerPage; //9 // Calculate the ending index of the results for the given page
   return state.search.results.slice(start, end); // Return the results for the given page
 };
+
+export const updateServings = function (newServings) {
+  state.recipe.ingredients.forEach(ing => {
+    ing.quantity = (ing.quantity * newServings) / state.recipe.servings;
+    // newQt=oldQt * newServings / oldSercings
+  });
+
+  state.recipe.servings = newServings;
+};

@@ -16,6 +16,8 @@ import 'regenerator-runtime/runtime';
 // Selecting the HTML element with class 'recipe'
 const recipeContainer = document.querySelector('.recipe');
 
+// controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
+
 // Fetching a recipe data from the Forkify API
 const controlRecipes = async function () {
   try {
@@ -63,11 +65,17 @@ const controlPagination = function (goToPage) {
   paginationView.render(model.state.search);
 };
 
-// controlRecipes(); // Invoking the controlRecipes function to fetch and display the recipe
+const controlServings = function (newServings) {
+  //Update the recipe servings(in state)
+  model.updateServings(newServings);
+  //Update the recipe view
+  recipeView.render(model.state.recipe);
+};
 
 const init = function () {
   recipeView.addHandlerRender(controlRecipes);
+  recipeView.addHandlerUpdateServings(controlServings);
   searchView.addHandlerSearch(controlSearchResults);
-  paginationView._addHandlerClick(controlPagination);
+  paginationView.addHandlerClick(controlPagination);
 };
 init();
