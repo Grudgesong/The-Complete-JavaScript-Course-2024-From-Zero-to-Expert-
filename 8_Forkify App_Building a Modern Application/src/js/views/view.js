@@ -4,7 +4,7 @@ export default class View {
   _data;
 
   // Method to render recipe onto the DOM
-  render(data) {
+  render(data, render = true) {
     // Check if data is empty or undefined
     if (!data || (Array.isArray(data) && data.length === 0)) {
       return this.renderError();
@@ -13,6 +13,9 @@ export default class View {
     this._data = data;
     // Generate new markup based on the data
     const markup = this._generateMarkup(); // Generate markup for recipe
+
+    if (!render) return markup; // Used for bookmark
+
     this._clear();
     this._parentElement.insertAdjacentHTML('afterbegin', markup); // Insert recipe markup into DOM
   }

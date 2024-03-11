@@ -3,6 +3,7 @@ import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultView from './views/resultView';
 import paginationView from './views/paginationView';
+import bookmarksView from './views/bookmarksView';
 
 // Importing 'core-js/stable' polyfill for ECMAScript features that are not natively supported by the browser
 import 'core-js/stable';
@@ -29,6 +30,7 @@ const controlRecipes = async function () {
 
     //Update results view to mark selected search result
     resultView._update(model.getSearchResultsPage());
+    bookmarksView._update(model.state.bookmarks);
 
     //Loading recipe
     await model.loadRecipe(id);
@@ -77,9 +79,14 @@ const controlServings = function (newServings) {
 };
 
 const controlAddBookmark = function () {
+  //Add/Remove bookmark
   if (!model.state.recipe.bookmarked) model.addBookmark(model.state.recipe);
   else model.deleteBookmark(model.state.recipe.id);
+  //Update recipe view
   recipeView._update(model.state.recipe);
+
+  //Render the bookmark tab
+  bookmarksView.render(model.state.bookmarks);
 };
 
 const init = function () {
