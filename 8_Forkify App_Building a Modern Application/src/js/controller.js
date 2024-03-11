@@ -9,10 +9,6 @@ import 'regenerator-runtime/runtime';
 // Selecting the HTML element with class 'recipe'
 const recipeContainer = document.querySelector('.recipe');
 
-// https://forkify-api.herokuapp.com/v2
-
-///////////////////////////////////////
-
 // Fetching a recipe data from the Forkify API
 const controlRecipes = async function () {
   try {
@@ -29,8 +25,7 @@ const controlRecipes = async function () {
     //Rendering the recipe--------------------------------------------------------
     recipeView.render(model.state.recipe);
   } catch (err) {
-    // Alerting an error if there is any problem with fetching or processing the data
-    alert(err);
+    recipeView.renderError();
   }
 };
 
