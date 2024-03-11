@@ -1,11 +1,16 @@
 import * as model from './model';
 import recipeView from './views/recipeView';
 import searchView from './views/searchView';
+import resultView from './views/resultView';
 
 // Importing 'core-js/stable' polyfill for ECMAScript features that are not natively supported by the browser
 import 'core-js/stable';
 // Importing 'regenerator-runtime/runtime' polyfill for generator functions and async/await syntax
 import 'regenerator-runtime/runtime';
+
+if (module.hot) {
+  module.hot.accept();
+}
 
 // Selecting the HTML element with class 'recipe'
 const recipeContainer = document.querySelector('.recipe');
@@ -32,6 +37,7 @@ const controlRecipes = async function () {
 
 const controlSearchResults = async function () {
   try {
+    resultView.renderSpinner();
     //Get search query
     const query = searchView.getQuery();
 
@@ -39,6 +45,9 @@ const controlSearchResults = async function () {
 
     //Load Search results
     await model.loadSearchResults(query);
+
+    //render results
+    resultView.render(model.state.search.results);
   } catch (err) {}
 };
 

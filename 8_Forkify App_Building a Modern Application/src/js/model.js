@@ -3,19 +3,23 @@ import { API_URL } from './config';
 import { getJSON } from './helpers';
 import recipeView from './views/recipeView';
 
+// State object to manage application state
 export const state = {
-  recipe: {},
+  recipe: {}, // Object to store recipe data
   search: {
-    query: '',
-    results: [],
+    query: '', // Query string for search
+    results: [], // Array to store search results
   },
 };
 
+// Async function to load recipe data by ID
 export const loadRecipe = async function (id) {
   try {
-    const data = await getJSON(`${API_URL}${id}`);
+    const data = await getJSON(`${API_URL}${id}`); // Fetching recipe data from API
     // Extracting recipe data from the response
     const { recipe } = data.data; //data.data.recipe
+
+    // Storing recipe data in the state object
     state.recipe = {
       id: recipe.id,
       title: recipe.title,
@@ -33,12 +37,14 @@ export const loadRecipe = async function (id) {
   }
 };
 
+// Async function to load search results
 export const loadSearchResults = async function (query) {
   try {
-    state.search.query = query;
-    const data = await getJSON(`${API_URL}?search=${query}`);
+    state.search.query = query; // Updating the search query in the state object
+    const data = await getJSON(`${API_URL}?search=${query}`); // Fetching search results from API based on the query
     console.log(data);
 
+    // Mapping the retrieved data to a format compatible with the state object
     state.search.results = data.data.recipes.map(rec => {
       return {
         id: rec.id,
