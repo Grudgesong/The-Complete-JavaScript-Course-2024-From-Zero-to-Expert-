@@ -1,6 +1,7 @@
 import { async } from 'regenerator-runtime';
 import { API_URL, RES_PER_PAGE, KEY, TIMEOUT_SEC } from './config';
-import { getJSON, sentJSON } from './helpers';
+// import { getJSON, sentJSON } from './helpers';
+import { AJAX } from './helpers';
 import recipeView from './views/recipeView';
 
 // State object to manage application state
@@ -16,6 +17,7 @@ export const state = {
 };
 
 const createRecipeObject = function (data) {
+  const { recipe } = data.data;
   return {
     id: recipe.id,
     title: recipe.title,
@@ -25,14 +27,14 @@ const createRecipeObject = function (data) {
     servings: recipe.servings,
     cookingTime: recipe.cooking_time,
     ingredients: recipe.ingredients,
-    ...(recipe.key && { key: recipeView.key }), // Check if key exists
+    ...(recipe.key && { key: recipe.key }), // Check if key exists
   }; // Restructuring the recipe data
 };
 
 // Async function to load recipe data by ID
 export const loadRecipe = async function (id) {
   try {
-    const data = await getJSON(`${API_URL}${id}`); // Fetching recipe data from API
+    const data = await AJAX(`${API_URL}${id}?key=${KEY}`); // Fetching recipe data from API
     // Extracting recipe data from the response
     const { recipe } = data.data; //data.data.recipe
 
@@ -56,7 +58,7 @@ export const loadRecipe = async function (id) {
 export const loadSearchResults = async function (query) {
   try {
     state.search.query = query; // Updating the search query in the state object
-    const data = await getJSON(`${API_URL}?search=${query}`); // Fetching search results from API based on the query
+    const data = await AJAX(`${API_URL}?search=${query}&key=${KEY}`); // Fetching search results from API based on the query
     console.log(data);
 
     // Mapping the retrieved data to a format compatible with the state object
@@ -66,6 +68,7 @@ export const loadSearchResults = async function (query) {
         title: rec.title,
         publisher: rec.publisher,
         image: rec.image_url,
+        ...(rec.key && { key: rec.key }), // Check if key exists
       };
     });
     //Reset the page to 1 when user search for new recipe
@@ -139,7 +142,8 @@ export const uploadRecipe = async function (newRecipe) {
       .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
       .map(ing => {
         // For each ingredient, remove spaces and split it into an array by commas.
-        const ingArr = ing[1].replaceAll(' ', '').split(',');
+        const ingArr = ing[1].split(',').map(el => el.trim());
+        // const ingArr = ing[1].replaceAll(' ', '').split(',');
         // If the split array does not have exactly 3 elements, throw an error indicating the wrong format.
         if (ingArr.length !== 3)
           throw new Error(
@@ -162,7 +166,7 @@ export const uploadRecipe = async function (newRecipe) {
     };
 
     // Send the recipe object to a server using a function sentJSON (not defined in this snippet) with the API URL and a user's API key.
-    const data = await sentJSON(`${API_URL}?key=${KEY}`, recipe);
+    const data = await AJAX(`${API_URL}?key=${KEY}`, recipe);
     // Process the response to create a recipe object (createRecipeObject is not defined in this snippet) and set it to some state variable.
     state.recipe = createRecipeObject(data);
     // Add the newly uploaded recipe to bookmarks (addBookmark is not defined in this snippet).
