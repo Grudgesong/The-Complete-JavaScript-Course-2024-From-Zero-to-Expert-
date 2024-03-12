@@ -1,6 +1,6 @@
 import { async } from 'regenerator-runtime';
-import { API_URL, RES_PER_PAGE } from './config';
-import { getJSON } from './helpers';
+import { API_URL, RES_PER_PAGE, KEY, TIMEOUT_SEC } from './config';
+import { getJSON, sentJSON } from './helpers';
 import recipeView from './views/recipeView';
 
 // State object to manage application state
@@ -15,6 +15,20 @@ export const state = {
   bookmarks: [],
 };
 
+const createRecipeObject = function (data) {
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    publisher: recipe.publisher,
+    sourceUrl: recipe.source_url,
+    image: recipe.image_url,
+    servings: recipe.servings,
+    cookingTime: recipe.cooking_time,
+    ingredients: recipe.ingredients,
+    ...(recipe.key && { key: recipeView.key }), // Check if key exists
+  }; // Restructuring the recipe data
+};
+
 // Async function to load recipe data by ID
 export const loadRecipe = async function (id) {
   try {
@@ -23,16 +37,7 @@ export const loadRecipe = async function (id) {
     const { recipe } = data.data; //data.data.recipe
 
     // Storing recipe data in the state object
-    state.recipe = {
-      id: recipe.id,
-      title: recipe.title,
-      publisher: recipe.publisher,
-      sourceUrl: recipe.source_url,
-      image: recipe.image_url,
-      servings: recipe.servings,
-      cookingTime: recipe.cooking_time,
-      ingredients: recipe.ingredients,
-    }; // Restructuring the recipe data
+    state.recipe = createRecipeObject(data);
 
     // Check if any bookmark in the state's bookmark array has the same ID as the provided ID
     if (state.bookmarks.some(bookmark => bookmark.id === id)) {
@@ -125,3 +130,44 @@ const clearBookmarks = function () {
 };
 
 // clearBookmarks();
+
+// Define an asynchronous function named uploadRecipe, which takes newRecipe as an argument.
+export const uploadRecipe = async function (newRecipe) {
+  try {
+    // Extract and transform ingredients from the newRecipe object. The ingredients must start with 'ingredient' and not be an empty string.
+    const ingredients = Object.entries(newRecipe)
+      .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
+      .map(ing => {
+        // For each ingredient, remove spaces and split it into an array by commas.
+        const ingArr = ing[1].replaceAll(' ', '').split(',');
+        // If the split array does not have exactly 3 elements, throw an error indicating the wrong format.
+        if (ingArr.length !== 3)
+          throw new Error(
+            ' Wrong ingredient format!! Please use the correct format'
+          );
+        // Destructure the array into quantity, unit, and description, converting quantity to a number (or null if it's not specified).
+        const [quantity, unit, description] = ingArr;
+        return { quantity: quantity ? +quantity : null, unit, description };
+      });
+
+    // Construct a recipe object with the processed information and additional details from newRecipe.
+    const recipe = {
+      title: newRecipe.title,
+      source_url: newRecipe.sourceUrl,
+      image_url: newRecipe.image,
+      publisher: newRecipe.publisher,
+      cooking_time: +newRecipe.cookingTime,
+      servings: +newRecipe.servings,
+      ingredients,
+    };
+
+    // Send the recipe object to a server using a function sentJSON (not defined in this snippet) with the API URL and a user's API key.
+    const data = await sentJSON(`${API_URL}?key=${KEY}`, recipe);
+    // Process the response to create a recipe object (createRecipeObject is not defined in this snippet) and set it to some state variable.
+    state.recipe = createRecipeObject(data);
+    // Add the newly uploaded recipe to bookmarks (addBookmark is not defined in this snippet).
+    addBookmark(state.recipe);
+  } catch (err) {
+    throw err;
+  }
+};

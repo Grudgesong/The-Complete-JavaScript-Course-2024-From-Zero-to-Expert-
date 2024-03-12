@@ -5,6 +5,7 @@ import icons from '../../img/icons.svg';
 class AddRecipeView extends View {
   // Selecting DOM elements and assigning them to variables
   _parentElement = document.querySelector('.upload');
+  _message = 'Recipe was successfully uploaded';
 
   _window = document.querySelector('.add-recipe-window');
   _overlay = document.querySelector('.overlay');
@@ -36,7 +37,7 @@ class AddRecipeView extends View {
   }
 
   // Method to add event listener for form submission
-  addHandlerUpload() {
+  addHandlerUpload(handler) {
     // Attaching a submit event listener to the parent element
     this._parentElement.addEventListener('submit', function (e) {
       e.preventDefault();
