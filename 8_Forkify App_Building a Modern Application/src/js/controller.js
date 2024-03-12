@@ -1,5 +1,5 @@
 import * as model from './model';
-import { MODAL_CLOSE_SEC } from './helpers';
+import { MODAL_CLOSE_SEC } from './config';
 import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultView from './views/resultView';
