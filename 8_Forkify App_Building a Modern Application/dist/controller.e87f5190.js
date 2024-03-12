@@ -1023,6 +1023,16 @@ var View = exports.default = /*#__PURE__*/function () {
   _createClass(View, [{
     key: "render",
     value:
+    /**
+     * Render the received object to the DOM
+     * @param {Object | Object[]} data The data to be rendered (e.g. recipe)
+     * @param {boolean} [render=true] If false, create markup string instead of rendering to the DOM
+     * @returns {undefined | string} A markup string is returned if render=false
+     * @this {Object} View instance
+     * @author Sangraj Ranjit
+     * @todo Finish implementation
+     */
+
     // Method to render recipe onto the DOM
     function render(data) {
       var _render = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
